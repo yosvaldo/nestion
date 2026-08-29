@@ -1,0 +1,165 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  TENANT
+}
+
+enum OrderStatus {
+  MENUNGGU_PEMBAYARAN
+  MENUNGGU_KONFIRMASI_PEMBAYARAN
+  DIPROSES
+  DIBATALKAN
+}
+
+enum RateType {
+  NOMINAL
+  PERCENTAGE
+}
+
+model User {
+  id                           String    @id @default(uuid())
+  email                        String    @unique
+  password                     String?   
+  name                         String?
+  role                         Role      @default(USER)
+  avatarUrl                    String?   @map("avatar_url")
+  isVerified                   Boolean   @default(false) @map("is_verified")
+  verificationToken            String?   @map("verification_token")
+  verificationTokenExpiresAt   DateTime? @map("verification_token_expires_at")
+  resetPasswordToken           String?   @map("reset_password_token")
+  resetPasswordExpiresAt      DateTime? @map("reset_password_expires_at")
+  createdAt                    DateTime  @default(now()) @map("created_at")
+  updatedAt                    DateTime  @updatedAt @map("updated_at")
+
+  properties                   Property[]
+  orders                       Order[]
+  reviews                      Review[]
+
+  @@map("users")
+}
+
+model Category {
+  id         String     @id @default(uuid())
+  name       String     @unique
+  createdAt  DateTime   @default(now()) @map("created_at")
+  updatedAt  DateTime   @updatedAt @map("updated_at")
+
+  properties Property[]
+
+  @@map("categories")
+}
+
+model Property {
+  id          String            @id @default(uuid())
+  tenantId    String            @map("tenant_id")
+  tenant      User              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  categoryId  String            @map("category_id")
+  category    Category          @relation(fields: [categoryId], references: [id])
+  name        String
+  description String?           @db.Text
+  city        String
+  address     String?           @db.Text
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
+
+  pictures    PropertyPicture[]
+  rooms       Room[]
+
+  @@map("properties")
+}
+
+model PropertyPicture {
+  id         String   @id @default(uuid())
+  propertyId String   @map("property_id")
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  pictureUrl String   @map("picture_url")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("property_pictures")
+}
+
+model Room {
+  id            String   @id @default(uuid())
+  propertyId    String   @map("property_id")
+  property      Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  name          String
+  description   String?  @db.Text
+  basePrice     Int      @map("base_price")
+  guestCapacity Int      @default(2) @map("guest_capacity")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  unavailabilities RoomUnavailability[]
+  peakSeasonRates  PeakSeasonRate[]
+  orders           Order[]
+
+  @@map("rooms")
+}
+
+model RoomUnavailability {
+  id                 String   @id @default(uuid())
+  roomId             String   @map("room_id")
+  room               Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  unavailabilityDate DateTime @map("unavailability_date") @db.Date
+  reason             String?
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  @@map("room_unavailabilities")
+}
+
+model PeakSeasonRate {
+  id        String   @id @default(uuid())
+  roomId    String   @map("room_id")
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  startDate DateTime @map("start_date") @db.Date
+  endDate   DateTime @map("end_date") @db.Date
+  rateType  RateType @map("rate_type")
+  rateValue Int      @map("rate_value")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("peak_season_rates")
+}
+
+model Order {
+  id                      String      @id @default(uuid())
+  orderNumber             String      @unique @map("order_number")
+  userId                  String      @map("user_id")
+  user                    User        @relation(fields: [userId], references: [id])
+  roomId                  String      @map("room_id")
+  room                    Room        @relation(fields: [roomId], references: [id])
+  checkInDate             DateTime    @map("check_in_date") @db.Date
+  checkOutDate            DateTime    @map("check_out_date") @db.Date
+  totalPrice              Int         @map("total_price")
+  status                  OrderStatus @default(MENUNGGU_PEMBAYARAN)
+  paymentProofUrl         String?     @map("payment_proof_url")
+  paymentProofUploadedAt  DateTime?   @map("payment_proof_uploaded_at")
+  paymentExpiresAt        DateTime    @map("payment_expires_at")
+  createdAt               DateTime    @default(now()) @map("created_at")
+  updatedAt               DateTime    @updatedAt @map("updated_at")
+
+  review                  Review?
+
+  @@map("orders")
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  orderId   String   @unique @map("order_id")
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id])
+  comment   String   @db.Text
+  rating    Int
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("reviews")
+}
