@@ -12,8 +12,13 @@ const DIRECT_URL = process.env.DIRECT_URL || "";
 
 const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || "access_secret";
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || "refresh_secret";
+const JWT_VERIFY_SECRET = process.env.JWT_VERIFY_SECRET || "verify_secret";
+const JWT_RESET_SECRET = process.env.JWT_RESET_SECRET || "reset_secret";
+
 const JWT_ACCESS_EXPIRES_IN = process.env.JWT_ACCESS_EXPIRES_IN || "15m";
 const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || "7d";
+const JWT_VERIFY_EXPIRES_IN = process.env.JWT_VERIFY_EXPIRES_IN || "1h";
+const JWT_RESET_EXPIRES_IN = process.env.JWT_RESET_EXPIRES_IN || "1h";
 
 const CLOUDINARY_URL = process.env.CLOUDINARY_URL || "";
 const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
@@ -29,8 +34,12 @@ export {
   DIRECT_URL,
   JWT_ACCESS_SECRET,
   JWT_REFRESH_SECRET,
+  JWT_VERIFY_SECRET,
+  JWT_RESET_SECRET,
   JWT_ACCESS_EXPIRES_IN,
   JWT_REFRESH_EXPIRES_IN,
+  JWT_VERIFY_EXPIRES_IN,
+  JWT_RESET_EXPIRES_IN,
   CLOUDINARY_URL,
   RESEND_API_KEY,
   EMAIL_FROM,
