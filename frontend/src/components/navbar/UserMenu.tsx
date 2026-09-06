@@ -46,41 +46,41 @@ export default function UserMenu({
 
         <DropdownMenuContent
           align="end"
-          className="w-56 rounded-2xl p-2 shadow-xl border-slate-100 bg-white"
+          className="w-56 rounded-2xl p-2 shadow-xl border border-slate-200 bg-white text-slate-800"
         >
           {!isAuthenticated ? (
             <>
-              <DropdownMenuItem asChild className="rounded-xl font-semibold cursor-pointer">
+              <DropdownMenuItem asChild className="rounded-xl font-semibold cursor-pointer text-slate-800 hover:bg-slate-100 hover:text-slate-900 focus:bg-slate-100">
                 <Link to="/login">Log in</Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild className="rounded-xl cursor-pointer">
+              <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-slate-700 hover:bg-slate-100 hover:text-slate-900 focus:bg-slate-100">
                 <Link to="/register">Sign up</Link>
               </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild className="rounded-xl cursor-pointer">
+              <DropdownMenuSeparator className="bg-slate-100" />
+              <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-slate-700 hover:bg-slate-100 hover:text-slate-900 focus:bg-slate-100">
                 <Link to="/tenant/register">Register as Tenant</Link>
               </DropdownMenuItem>
             </>
           ) : (
             <>
-              <DropdownMenuItem asChild className="rounded-xl font-semibold cursor-pointer">
+              <DropdownMenuItem asChild className="rounded-xl font-semibold cursor-pointer text-slate-800 hover:bg-slate-100 focus:bg-slate-100">
                 <Link to="/profile">My Account</Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild className="rounded-xl cursor-pointer">
+              <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-slate-700 hover:bg-slate-100 focus:bg-slate-100">
                 <Link to="/orders">My Bookings</Link>
               </DropdownMenuItem>
               {userRole === "TENANT" && (
                 <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild className="rounded-xl cursor-pointer">
+                  <DropdownMenuSeparator className="bg-slate-100" />
+                  <DropdownMenuItem asChild className="rounded-xl cursor-pointer text-slate-700 hover:bg-slate-100 focus:bg-slate-100">
                     <Link to="/tenant/dashboard">Tenant Dashboard</Link>
                   </DropdownMenuItem>
                 </>
               )}
-              <DropdownMenuSeparator />
+              <DropdownMenuSeparator className="bg-slate-100" />
               <DropdownMenuItem
                 onClick={onLogout}
-                className="rounded-xl text-red-600 focus:text-red-600 cursor-pointer"
+                className="rounded-xl text-red-600 hover:bg-red-50 focus:bg-red-50 cursor-pointer"
               >
                 Log out
               </DropdownMenuItem>
