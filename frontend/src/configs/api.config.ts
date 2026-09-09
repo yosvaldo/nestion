@@ -1,5 +1,5 @@
-import axios from "axios";
-import { API_BASE_URL } from "./app.config";
+import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
+import useAuthStore from "../stores/authStore";
 
 let accessTokenMemory: string | null = null;
 
@@ -9,14 +9,19 @@ export const setAccessToken = (token: string | null) => {
 
 export const getAccessToken = () => accessTokenMemory;
 
+const rawBaseUrl = import.meta.env.VITE_BASE_API_URL || "http://localhost:3000/api";
+const baseURL = rawBaseUrl.endsWith("/") ? rawBaseUrl : `${rawBaseUrl}`;
+
 export const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL,
   withCredentials: true,
 });
 
-api.interceptors.request.use((config) => {
-  if (accessTokenMemory && config.headers) {
-    config.headers.Authorization = `Bearer ${accessTokenMemory}`;
+api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+  const token = accessTokenMemory || useAuthStore.getState().accessToken;
+  
+  if (token && config.headers) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
 
   if (!config.headers["Content-Type"] && !(config.data instanceof FormData)) {
@@ -45,10 +50,10 @@ const processQueue = (error: unknown, token: string | null = null) => {
 
 api.interceptors.response.use(
   (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
-
-    if (error.response?.status === 401 && !originalRequest._retry) {
+  async (error: AxiosError) => {
+    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+    
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
       if (originalRequest.url?.includes("/auth/refresh-token")) {
         return Promise.reject(error);
       }
@@ -69,9 +74,11 @@ api.interceptors.response.use(
 
       try {
         const res = await api.post("/auth/refresh-token");
-        const { accessToken } = res.data.data;
+        const { accessToken, user } = res.data.data;
 
         setAccessToken(accessToken);
+        useAuthStore.getState().setAuth(user, accessToken);
+
         processQueue(null, accessToken);
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
 
@@ -79,6 +86,7 @@ api.interceptors.response.use(
       } catch (refreshError) {
         processQueue(refreshError, null);
         setAccessToken(null);
+        useAuthStore.getState().setAuth(null, null);
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
