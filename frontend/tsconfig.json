@@ -1,15 +1,14 @@
 {
-	"compilerOptions": {
-		"target": "ES2022",
-		"module": "NodeNext",
-		"moduleResolution": "NodeNext",
-		"outDir": "dist",
-		"rootDir": "./" /* This keeps the folder structure identical in dist */,
-		"strict": true,
-		"skipLibCheck": true,
-		"esModuleInterop": true,
-		"verbatimModuleSyntax": true
-	},
-	"include": ["**/*"],
-	"exclude": ["node_modules", "dist"]
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
 }

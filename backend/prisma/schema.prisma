@@ -35,9 +35,10 @@ model User {
   verificationToken            String?   @map("verification_token")
   verificationTokenExpiresAt   DateTime? @map("verification_token_expires_at")
   resetPasswordToken           String?   @map("reset_password_token")
-  resetPasswordExpiresAt      DateTime? @map("reset_password_expires_at")
+  resetPasswordExpiresAt       DateTime? @map("reset_password_expires_at")
   createdAt                    DateTime  @default(now()) @map("created_at")
   updatedAt                    DateTime  @updatedAt @map("updated_at")
+  deletedAt                    DateTime? @map("deleted_at")
 
   properties                   Property[]
   orders                       Order[]
@@ -51,6 +52,7 @@ model Category {
   name       String     @unique
   createdAt  DateTime   @default(now()) @map("created_at")
   updatedAt  DateTime   @updatedAt @map("updated_at")
+  deletedAt  DateTime?  @map("deleted_at")
 
   properties Property[]
 
@@ -69,6 +71,7 @@ model Property {
   address     String?           @db.Text
   createdAt   DateTime          @default(now()) @map("created_at")
   updatedAt   DateTime          @updatedAt @map("updated_at")
+  deletedAt   DateTime?         @map("deleted_at")
 
   pictures    PropertyPicture[]
   rooms       Room[]
@@ -96,6 +99,7 @@ model Room {
   guestCapacity Int      @default(2) @map("guest_capacity")
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
+  deletedAt     DateTime? @map("deleted_at")
 
   unavailabilities RoomUnavailability[]
   peakSeasonRates  PeakSeasonRate[]
@@ -116,15 +120,16 @@ model RoomUnavailability {
 }
 
 model PeakSeasonRate {
-  id        String   @id @default(uuid())
-  roomId    String   @map("room_id")
-  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  startDate DateTime @map("start_date") @db.Date
-  endDate   DateTime @map("end_date") @db.Date
-  rateType  RateType @map("rate_type")
-  rateValue Int      @map("rate_value")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id        String    @id @default(uuid())
+  roomId    String    @map("room_id")
+  room      Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  startDate DateTime  @map("start_date") @db.Date
+  endDate   DateTime  @map("end_date") @db.Date
+  rateType  RateType  @map("rate_type")
+  rateValue Int       @map("rate_value")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
 
   @@map("peak_season_rates")
 }
