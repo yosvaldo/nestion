@@ -20,16 +20,7 @@ export default function UserMenu({
   onLogout,
 }: UserMenuProps) {
   return (
-    <div className="flex items-center gap-3 font-sans">
-      {userRole !== "USER" && (
-        <Link
-          to="/tenant/register"
-          className="hidden sm:block text-xs font-bold uppercase tracking-wider text-slate-700 hover:text-amber-600 hover:bg-slate-50 transition-colors px-3 py-2 rounded-full"
-        >
-          Become a Host
-        </Link>
-      )}
-
+    <div className="flex items-center font-sans">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button className="flex items-center gap-3 border border-slate-200 bg-white px-3 py-1.5 rounded-full hover:shadow-md transition-all outline-none">
