@@ -1,4 +1,4 @@
-import { ReactNode, useEffect } from "react";
+import { type ReactNode, useEffect } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import useAuthStore from "@/stores/authStore";

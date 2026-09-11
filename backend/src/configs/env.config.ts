@@ -22,7 +22,8 @@ const JWT_RESET_EXPIRES_IN = process.env.JWT_RESET_EXPIRES_IN || "1h";
 
 const CLOUDINARY_URL = process.env.CLOUDINARY_URL || "";
 const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
-const EMAIL_FROM = process.env.EMAIL_FROM || "Nestion Support <no-reply@nestion.com>";
+const APP_EMAIL = process.env.APP_EMAIL || "noreply@nestion.com"
+const EMAIL_FROM = process.env.EMAIL_FROM || `$APP_NAME Support <no-reply@nestion.com>`;
 
 export {
   APP_NAME,
@@ -42,5 +43,6 @@ export {
   JWT_RESET_EXPIRES_IN,
   CLOUDINARY_URL,
   RESEND_API_KEY,
+  APP_EMAIL,
   EMAIL_FROM,
 };

@@ -1,23 +1,8 @@
 import type IRoute from "@/models/route.model";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
-
-const ProfilePage = () => (
-  <div className="p-8 font-sans max-w-4xl mx-auto">
-    <h1 className="text-2xl font-bold text-slate-900">User Profile</h1>
-  </div>
-);
-
-const UserOrdersPage = () => (
-  <div className="p-8 font-sans max-w-4xl mx-auto">
-    <h1 className="text-2xl font-bold text-slate-900">My Bookings</h1>
-  </div>
-);
-
-const TenantDashboardPage = () => (
-  <div className="p-8 font-sans max-w-4xl mx-auto">
-    <h1 className="text-2xl font-bold text-slate-900">Tenant Dashboard</h1>
-  </div>
-);
+import ProfilePage from "@/pages/user/profile.page";
+import UserOrdersPage from "@/pages/user/order.page";
+import TenantDashboardPage from "@/pages/tenant/dashboard.page";
 
 const protectedRoutes: IRoute[] = [
   {
