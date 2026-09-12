@@ -1,5 +1,18 @@
 import { z } from "zod";
 
+const commonSchema = {
+  email: z
+    .email("Invalid email format")
+    .min(5, "Email must be at least 5 characters")
+    .max(255, "Email must be at most 255 characters"),
+  password: z
+    .string()
+    .regex(
+      /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/,
+      "Password must be at least 6 characters long and contain at least one letter and one number"
+    ),
+};
+
 export const signUpSchema = z.object({
   email: z.email("Invalid email format"),
   role: z.enum(["USER", "TENANT"], {
@@ -29,7 +42,7 @@ export const signInSchema = z.object({
 });
 
 export const requestResetPasswordSchema = z.object({
-  email: z.string().email("Invalid email format"),
+  email: z.email("Invalid email format"),
 });
 
 export const resetPasswordSchema = z
@@ -47,3 +60,11 @@ export const resetPasswordSchema = z
     message: "Passwords do not match",
     path: ["confirmNewPassword"],
   });
+
+export const updateProfileSchema = z.object({
+  fullName: z.string().min(2, "Name must be at least 2 characters").optional(),
+});
+
+export const updateEmailSchema = z.object({
+  email: commonSchema.email,
+});

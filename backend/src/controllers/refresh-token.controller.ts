@@ -13,7 +13,7 @@ const RefreshTokenController = {
             const validRefreshToken = req.cookies["refresh-token"];
             if (!validRefreshToken) throw new AppError("Refresh token not provided", 401);
 
-            const decode = tokenService.verify(validRefreshToken, REFRESH_SECRET!) as JwtPayload;
+            const decode = tokenService.verify(validRefreshToken, JWT_REFRESH_SECRET!) as JwtPayload;
             if (!decode || !decode.id) throw new AppError("Invalid refresh token", 403);
 
             const { user, accessToken, refreshToken } = await authService.refreshAccessToken(decode.id);

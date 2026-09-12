@@ -14,3 +14,5 @@ export const refreshCookieConfig: CookieOptions = {
   secure: IS_PROD,
   maxAge: 7 * 24 * 60 * 60 * 1000,
 };
+
+export default refreshCookieConfig;
