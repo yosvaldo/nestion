@@ -2,6 +2,7 @@ import { Router } from "express";
 import AuthController from "../controllers/auth.controller.js";
 import RefreshTokenController from "../controllers/refresh-token.controller.js";
 import { verifyToken, uniqueUserGuard } from "../middlewares/auth.middleware.js";
+import { avatarUploader } from "../middlewares/upload.middleware.js";
 
 export const authRouter = Router();
 
@@ -21,5 +22,12 @@ authRouter.post(
 authRouter.use(verifyToken("access"));
 authRouter.post("/sign-out", AuthController.signOut);
 authRouter.get("/me", AuthController.getAuthUser);
+
+authRouter.patch(
+  "/profile",
+  avatarUploader().single("avatar"),
+  AuthController.updateProfile
+);
+authRouter.patch("/email", AuthController.updateEmail);
 
 export default authRouter;

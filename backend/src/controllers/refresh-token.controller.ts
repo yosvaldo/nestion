@@ -4,7 +4,7 @@ import authService from "../services/auth.service.js";
 import tokenService from "../services/token.service.js";
 import { JWT_REFRESH_SECRET } from "../libs/jwt.js";
 import cookieConfig from "../configs/cookie.config.js";
-import { responseBuilder } from "../utils/response-builder.utils.js";
+import { responseBuilder } from "../utils/response-builder.util.js";
 import type { JwtPayload } from "jsonwebtoken";
 
 const RefreshTokenController = {

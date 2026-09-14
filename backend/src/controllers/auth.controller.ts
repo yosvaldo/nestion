@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
-import { responseBuilder } from "../utils/response-builder.utils.js";
+import { responseBuilder } from "../utils/response-builder.util.js";
 import AppError from "../errors/app.error.js";
 import cookieConfig from "../configs/cookie.config.js";
 import authService from "../services/auth.service.js";

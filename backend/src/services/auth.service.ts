@@ -5,6 +5,9 @@ import { JWT_ACCESS_SECRET, JWT_ACCESS_EXPIRES_IN, JWT_REFRESH_SECRET, JWT_REFRE
 import AppError from "../errors/app.error.js";
 import EmailService from "./email.service.js";
 import renderTemplate from "../libs/handlebars.js";
+import Cloudinary from "../libs/cloudinary.js";
+import { Readable } from "stream";
+import { uploadToCloudinary } from "../utils/cloudinary.util.js";
 
 export class AuthService {
   static async registerUser(email: string, role: "USER" | "TENANT") {
@@ -112,10 +115,18 @@ export class AuthService {
     return user;
   }
 
-  static async updateUserProfile(userId: string, data: { fullName?: string; }) {
+  static async updateUserProfile(userId: string, data: { fullName?: string; }, file?: Express.Multer.File) {
     const user = await authRepository.findById(userId);
     if (!user) throw new AppError("User tidak ditemukan", 404);
-    return authRepository.updateProfile(userId, data);
+
+    const avatarUrl = file
+      ? await uploadToCloudinary(file, "nestion/avatars")
+      : undefined;
+
+    return authRepository.updateProfile(userId, {
+      ...data,
+      ...(avatarUrl && { avatarUrl }),
+    });
   }
 
   static async requestEmailUpdate(userId: string, newEmail: string) {
