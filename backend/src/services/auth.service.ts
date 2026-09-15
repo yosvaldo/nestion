@@ -38,7 +38,14 @@ export class AuthService {
     if (user.isVerified) throw new AppError("Account sudah terverifikasi", 400);
 
     const hashedPassword = await hashPassword(password);
-    return authRepository.verifyAndSetPassword(user.id, hashedPassword);
+    const updatedUser = await authRepository.verifyAndSetPassword(user.id, hashedPassword);
+
+    const payload = { id: updatedUser.id, role: updatedUser.role, isVerified: true };
+    const accessToken = TokenService.generate(payload, JWT_ACCESS_SECRET!, JWT_ACCESS_EXPIRES_IN || "15m");
+    const refreshToken = TokenService.generate(payload, JWT_REFRESH_SECRET!, JWT_REFRESH_EXPIRES_IN || "7d");
+
+    const { password: _, ...userWithoutPassword } = updatedUser;
+    return { user: userWithoutPassword, accessToken, refreshToken };
   }
 
   static async signIn(email: string, plainPassword: string) {
