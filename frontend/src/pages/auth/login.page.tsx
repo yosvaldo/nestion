@@ -53,9 +53,9 @@ export default function LoginPage() {
       <SEO title="Login - Nestion" description="Log in to your Nestion account"/>
       <div className="max-w-md mx-auto my-12 p-6 bg-white rounded-2xl border border-slate-100 shadow-sm font-sans">
         <h2 className="text-2xl font-bold text-slate-900 mb-1">Masuk ke Nestion</h2>
-        <p className="text-sm text-slate-500 mb-6">Silakan masuk menggunakan account Anda</p>
+        <p className="text-sm text-slate-500 mb-6">Silahkan masuk menggunakan account Anda</p>
       
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
             <input
@@ -68,7 +68,12 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-medium text-slate-700">Password</label>
+              <Link to="/reset-password" className="text-xs text-amber-600 font-semibold hover:underline">
+                Lupa password?
+              </Link>
+            </div>
             <input
               type="password"
               {...register("password")}
@@ -88,7 +93,7 @@ export default function LoginPage() {
         </form>
 
         <p className="text-xs text-center text-slate-500 mt-6">
-          Belum punya akun?{" "}
+          Belum punya account?{" "}
           <Link to="/register" className="text-amber-600 font-semibold hover:underline">
             Daftar sebagai User
           </Link>{" "}

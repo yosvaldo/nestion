@@ -28,10 +28,13 @@ model User {
   id                           String    @id @default(uuid())
   email                        String    @unique
   password                     String?   
-  name                         String?
+  fullName                     String?   @map("full_name")
   role                         Role      @default(USER)
   avatarUrl                    String?   @map("avatar_url")
   isVerified                   Boolean   @default(false) @map("is_verified")
+  bankName                     String?   @map("bank_name")
+  bankAccountName              String?   @map("bank_account_name")
+  bankAccountNumber            String?   @map("bank_account_number")
   verificationToken            String?   @map("verification_token")
   verificationTokenExpiresAt   DateTime? @map("verification_token_expires_at")
   resetPasswordToken           String?   @map("reset_password_token")

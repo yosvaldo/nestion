@@ -15,7 +15,7 @@ const EmailService = {
             });
             return data;
         } catch (error) {
-            console.error("⚠️ EmailService failed to deliver mail via Resend:", error);
+            console.error("EmailService failed to deliver mail via Resend:", error);
             return null;
         }
     },
@@ -41,7 +41,7 @@ const EmailService = {
             });
             return data;
         } catch (error) {
-            console.error("⚠️ EmailService failed to deliver mail with attachment via Resend:", error);
+            console.error("EmailService failed to deliver mail with attachment via Resend:", error);
             return null;
         }
     },

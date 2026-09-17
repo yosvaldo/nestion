@@ -14,20 +14,20 @@ export default function ProtectedRoute({
   allowedRole,
   requireVerified = false,
 }: ProtectedRouteProps) {
-  const { user, accessToken } = useAuthStore();
+  const { user } = useAuthStore();
   const location = useLocation();
 
   useEffect(() => {
-    if (!accessToken || !user) {
+    if (!user) {
       toast.error("Silakan login terlebih dahulu untuk mengakses halaman ini.");
     } else if (requireVerified && !user.isVerified) {
-      toast.error("Akun Anda belum terverifikasi. Silakan cek email Anda.");
+      toast.error("Account Anda belum terverifikasi. Silahkan cek email Anda.");
     } else if (allowedRole && user.role !== allowedRole) {
       toast.error("Anda tidak memiliki akses ke halaman ini.");
     }
-  }, [accessToken, user, allowedRole, requireVerified]);
+  }, [user, allowedRole, requireVerified]);
 
-  if (!accessToken || !user) {
+  if (!user) {
     return <Navigate to="/" state={{ from: location }} replace />;
   }
 

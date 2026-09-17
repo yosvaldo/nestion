@@ -1,7 +1,7 @@
 import "dotenv/config";
 
 const APP_NAME = process.env.APP_NAME || "Nestion";
-const APP_PORT = Number(process.env.APP_PORT) || 3000;
+const APP_PORT = Number(process.env.APP_PORT) || 8000;
 const APP_ENV = process.env.APP_ENV || "development";
 
 const IS_PROD = APP_ENV === "production";

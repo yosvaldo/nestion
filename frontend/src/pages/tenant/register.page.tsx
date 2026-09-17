@@ -10,6 +10,8 @@ import type { AxiosError } from "axios";
 
 type RegisterValues = z.infer<typeof signUpSchema>;
 
+const inputClass = "w-full px-3.5 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500";
+
 export default function TenantRegisterPage() {
   const {
     register,
@@ -18,17 +20,21 @@ export default function TenantRegisterPage() {
     reset,
   } = useForm<RegisterValues>({
     resolver: zodResolver(signUpSchema),
-    defaultValues: { email: "", role: "TENANT" },
+    defaultValues: {
+      email: "",
+      role: "TENANT",
+      bankDetails: { bankName: "", bankAccountName: "", bankAccountNumber: "" },
+    },
   });
 
   const onSubmit = async (data: RegisterValues) => {
     try {
-      await api.post("/auth/register", { ...data, role: "TENANT" });
-      toast.success("Link verifikasi partner tenant telah dikirim ke email Anda!");
+      await api.post("/auth/sign-up", { ...data, role: "TENANT" });
+      toast.success("Link verifikasi Tenant telah dikirim ke email Anda!");
       reset();
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
-      toast.error(error.response?.data?.message || "Gagal mendaftar sebagai tenant.");
+      toast.error(error.response?.data?.message || "Gagal mendaftar sebagai Tenant.");
     }
   };
 
@@ -42,16 +48,49 @@ export default function TenantRegisterPage() {
         <h2 className="text-2xl font-bold text-slate-900 mb-1">Daftar sebagai Tenant</h2>
         <p className="text-sm text-slate-500 mb-6">Mulai sewakan properti Anda.</p>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Email bisnis / properti</label>
             <input
               type="email"
               placeholder="tenant@properti.com"
               {...register("email")}
-              className="w-full px-3.5 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+              className={inputClass}
             />
             {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>}
+          </div>
+
+          <div className="pt-2 border-t border-slate-100">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Data Bank</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Nama bank</label>
+            <input placeholder="contoh: BCA, Mandiri" {...register("bankDetails.bankName")} className={inputClass} />
+            {errors.bankDetails?.bankName && (
+              <p className="text-xs text-red-500 mt-1">{errors.bankDetails.bankName.message}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Nama pemilik rekening</label>
+            <input placeholder="Sesuai buku tabungan" {...register("bankDetails.bankAccountName")} className={inputClass} />
+            {errors.bankDetails?.bankAccountName && (
+              <p className="text-xs text-red-500 mt-1">{errors.bankDetails.bankAccountName.message}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Nomor rekening</label>
+            <input
+              inputMode="numeric"
+              placeholder="contoh: 1234567890"
+              {...register("bankDetails.bankAccountNumber")}
+              className={inputClass}
+            />
+            {errors.bankDetails?.bankAccountNumber && (
+              <p className="text-xs text-red-500 mt-1">{errors.bankDetails.bankAccountNumber.message}</p>
+            )}
           </div>
 
           <button
@@ -64,7 +103,7 @@ export default function TenantRegisterPage() {
         </form>
 
         <p className="text-xs text-center text-slate-500 mt-6">
-          Ingin memesan tempat penginapan?{" "}
+          Ingin memesan penginapan?{" "}
           <Link to="/register" className="text-amber-600 font-semibold hover:underline">
             Daftar sebagai User
           </Link>

@@ -4,18 +4,25 @@ import { toast } from "sonner";
 import axios from "axios";
 import { api, setAccessToken } from "../configs/api.config";
 
+export interface BankDetails {
+  bankName: string;
+  bankAccountName: string;
+  bankAccountNumber: string;
+}
+
 export interface User {
   id: string;
   email: string;
   role: "USER" | "TENANT";
   isVerified: boolean;
-  name?: string;
-  avatar?: string;
+  fullName?: string;
+  avatarUrl?: string;
 }
 
 export interface RegisterPayload {
     email: string;
     role: "USER" | "TENANT";
+    bankDetails?: BankDetails;
 }
 
 interface AuthState {
@@ -25,7 +32,15 @@ interface AuthState {
   login: (data: { email: string; password: string }, onSuccess?: () => void) => Promise<void>;
   logout: () => Promise<void>;
   setAuth: (user: User | null, token: string | null) => void;
+  setUser: (user: User | null) => void;
 }
+
+const getErrorMessage = (error: unknown, fallback: string) => {
+  if (axios.isAxiosError(error) && error.response?.data?.message) {
+    return error.response.data.message;
+  }
+  return fallback;
+};
 
 const useAuthStore = create<AuthState>()(
     persist(
@@ -37,25 +52,22 @@ const useAuthStore = create<AuthState>()(
                 setAccessToken(accessToken);
                 set({ user, accessToken });
             },
+
+            setUser: (user) => set({ user }),
         
             signUp: async (data, onSuccess) => {
                 try {
-                    const endpoint = data.role === "TENANT" ? "/auth/tenant/register" : "/auth/register";
-                    await api.post(endpoint, data);
+                    await api.post("/auth/sign-up", data);
                     toast.success("Registrasi berhasil. Silahkan periksa email Anda untuk verifikasi.");
                     if (onSuccess) onSuccess();
                 } catch (error: unknown) {
-                    let message = "Gagal melakukan registrasi.";
-                    if (axios.isAxiosError(error) && error.response?.data?.message) {
-                        message = error.response.data.message;
-                    }
-                    toast.error(message);
+                    toast.error(getErrorMessage(error, "Gagal melakukan registrasi."));
                 }
             },
             
             login: async (data, onSuccess) => {
                 try {
-                    const response = await api.post("/auth/login", data);
+                    const response = await api.post("/auth/sign-in", data);
                     const { accessToken, user } = response.data.data || {};
 
                     setAccessToken(accessToken || null);
@@ -64,17 +76,13 @@ const useAuthStore = create<AuthState>()(
                     toast.success("Berhasil masuk!");
                     if (onSuccess) onSuccess();
                 } catch (error: unknown) {
-                    let message = "Email atau password salah.";
-                    if (axios.isAxiosError(error) && error.response?.data?.message) {
-                        message = error.response.data.message;
-                    }
-                    toast.error(message);
+                    toast.error(getErrorMessage(error, "Email atau password salah."));
                 }
             },
 
             logout: async () => {
                 try {
-                    await api.post("/auth/logout");
+                    await api.post("/auth/sign-out");
                 } catch (error: unknown) {
                     console.error("Logout error:", error);
                 } finally {

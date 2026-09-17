@@ -5,79 +5,36 @@ import { JWT_ACCESS_SECRET, JWT_ACCESS_EXPIRES_IN, JWT_REFRESH_SECRET, JWT_REFRE
 import AppError from "../errors/app.error.js";
 import EmailService from "./email.service.js";
 import renderTemplate from "../libs/handlebars.js";
-import Cloudinary from "../libs/cloudinary.js";
-import { Readable } from "stream";
-import { uploadToCloudinary } from "../utils/cloudinary.util.js";
+import type { BankDetails } from "../types/auth.type.js";
+import { Role } from "../generated/prisma/enums.js";
+
+type SessionUser = { id: string; role: string; isVerified: boolean };
 
 export class AuthService {
-  static async registerUser(email: string, role: "USER" | "TENANT") {
-    const existing = await authRepository.findByEmail(email);
-    if (existing) throw new AppError("Email sudah terdaftar", 400);
-
-    const user = await authRepository.createUser(email, role);
-    const verificationToken = TokenService.generate(
-      { id: user.id, email: user.email },
-      JWT_ACCESS_SECRET!,
-      "1h"
-    );
-
-    const verifyUrl = `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`;
-    const html = renderTemplate("verify-email.hbs", { verifyUrl, role });
-    
-    EmailService.sendEmail(user.email, "Verifikasi account Anda", html)
-
+  static async registerUser(email: string, role: Role, bankDetails?: BankDetails) {
+    const user = await authRepository.createUser(email, role, bankDetails);
+    await this.sendVerificationEmail(user.id, user.email, user.role);
     return user;
   }
 
+  static async sendVerificationEmail(userId: string, email: string, role: string) {
+    const token = TokenService.generate({ id: userId, email }, JWT_ACCESS_SECRET!, "1h");
+    const verifyUrl = `${process.env.CLIENT_URL}/verify-email?token=${token}`;
+    const html = renderTemplate("verify-email.hbs", { verifyUrl, role });
+
+    await EmailService.sendEmail(email, "Verifikasi account Anda", html);
+  }
+
   static async verifyAndSetPassword(token: string, password: string) {
-    const decoded = TokenService.verify(token, JWT_ACCESS_SECRET!) as { id: string };
+    const decoded = TokenService.verify(token, JWT_ACCESS_SECRET!) as { id: string } || null;
     if (!decoded) throw new AppError("Link verifikasi expired atau invalid", 400);
 
-    const user = await authRepository.findById(decoded.id);
+    const user = await authRepository.findCredentialsById(decoded.id);
     if (!user) throw new AppError("User tidak ditemukan", 404);
     if (user.isVerified) throw new AppError("Account sudah terverifikasi", 400);
 
     const hashedPassword = await hashPassword(password);
-    const updatedUser = await authRepository.verifyAndSetPassword(user.id, hashedPassword);
-
-    const payload = { id: updatedUser.id, role: updatedUser.role, isVerified: true };
-    const accessToken = TokenService.generate(payload, JWT_ACCESS_SECRET!, JWT_ACCESS_EXPIRES_IN || "15m");
-    const refreshToken = TokenService.generate(payload, JWT_REFRESH_SECRET!, JWT_REFRESH_EXPIRES_IN || "7d");
-
-    const { password: _, ...userWithoutPassword } = updatedUser;
-    return { user: userWithoutPassword, accessToken, refreshToken };
-  }
-
-  static async signIn(email: string, plainPassword: string) {
-    const user = await authRepository.findByEmail(email);
-    if (!user || !user.password) {
-      throw new AppError("Email atau password invalid", 401);
-    }
-
-    const isMatch = await comparePassword(plainPassword, user.password);
-    if (!isMatch) throw new AppError("Email atau password tidak valid", 401);
-
-    if (!user.isVerified) {
-      throw new AppError("Account belum terverifikasi. Mohon verifikasi melalui link di email.", 403);
-    }
-
-    const payload = { id: user.id, role: user.role, isVerified: user.isVerified };
-    const accessToken = TokenService.generate(payload, JWT_ACCESS_SECRET!, JWT_ACCESS_EXPIRES_IN || "15m");
-    const refreshToken = TokenService.generate(payload, JWT_REFRESH_SECRET!, JWT_REFRESH_EXPIRES_IN || "7d");
-
-    const { password: _, ...userWithoutPassword } = user;
-    return { user: userWithoutPassword, accessToken, refreshToken };
-  }
-
-  static async refreshAccessToken(userId: string) {
-    const user = await authRepository.findById(userId);
-    if (!user) throw new AppError("User tidak ditemukan", 404);
-
-    const payload = { id: user.id, role: user.role, isVerified: user.isVerified };
-    const accessToken = TokenService.generate(payload, JWT_ACCESS_SECRET!, JWT_ACCESS_EXPIRES_IN || "15m");
-    const refreshToken = TokenService.generate(payload, JWT_REFRESH_SECRET!, JWT_REFRESH_EXPIRES_IN || "7d");
-
-    return { user, accessToken, refreshToken };
+    return authRepository.verifyAndSetPassword(user.id, hashedPassword);
   }
 
   static async resendVerificationEmail(email: string) {
@@ -85,71 +42,32 @@ export class AuthService {
     if (!user) throw new AppError("User tidak ditemukan", 404);
     if (user.isVerified) throw new AppError("Account sudah terverifikasi", 400);
 
-    const verificationToken = TokenService.generate(
-      { id: user.id, email: user.email },
-      JWT_ACCESS_SECRET!,
-      "1h"
-    );
-
-    const verifyUrl = `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`;
-    const html = renderTemplate("verify-email.hbs", { verifyUrl, role: user.role });
-    await EmailService.sendEmail(user.email, "Verify Your Property Renting Account", html);
+    await this.sendVerificationEmail(user.id, user.email, user.role);
   }
 
-  static async sendResetPasswordEmail(email: string) {
+  static async signIn(email: string, plainPassword: string) {
     const user = await authRepository.findByEmail(email);
-    if (!user) throw new AppError("User tidak ditemukan", 404);
-    if (!user.password) throw new AppError("Tidak dapat reset password untuk social login accounts", 400);
+    if (!user?.password) throw new AppError("Email atau password invalid", 401);
 
-    const resetToken = TokenService.generate({ id: user.id }, JWT_ACCESS_SECRET!, "1h");
-    const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
-    const html = renderTemplate("reset-password.hbs", { resetUrl });
+    const isMatch = await comparePassword(plainPassword, user.password);
+    if (!isMatch) throw new AppError("Email atau password tidak valid", 401);
+    if (!user.isVerified) throw new AppError("Account belum terverifikasi. Mohon cek email Anda.", 403);
 
-    await EmailService.sendEmail(user.email, "Reset password Anda", html);
+    const { password: _, ...safeUser } = user;
+    return this.buildSession(safeUser);
   }
 
-  static async resetPassword(token: string, newPassword: string) {
-    const decoded = TokenService.verify(token, JWT_ACCESS_SECRET!) as { id: string };
-    if (!decoded) throw new AppError("Reset link expired atau invalid", 400);
-
-    const hashedPassword = await hashPassword(newPassword);
-    return authRepository.updatePassword(decoded.id, hashedPassword);
-  }
-
-  static async getUserProfile(userId: string) {
+  static async refreshAccessToken(userId: string) {
     const user = await authRepository.findById(userId);
     if (!user) throw new AppError("User tidak ditemukan", 404);
-    return user;
+    return this.buildSession(user);
   }
 
-  static async updateUserProfile(userId: string, data: { fullName?: string; }, file?: Express.Multer.File) {
-    const user = await authRepository.findById(userId);
-    if (!user) throw new AppError("User tidak ditemukan", 404);
-
-    const avatarUrl = file
-      ? await uploadToCloudinary(file, "nestion/avatars")
-      : undefined;
-
-    return authRepository.updateProfile(userId, {
-      ...data,
-      ...(avatarUrl && { avatarUrl }),
-    });
-  }
-
-  static async requestEmailUpdate(userId: string, newEmail: string) {
-    const existing = await authRepository.findByEmail(newEmail);
-    if (existing) throw new AppError("Email sudah terdaftar oleh user lain", 400);
-
-    const user = await authRepository.findById(userId);
-    if (!user) throw new AppError("User tidak ditemukan", 404);
-
-    const updatedUser = await authRepository.updateProfile(userId, {
-        email: newEmail,
-        isVerified: false,
-    });
-
-    await this.resendVerificationEmail(newEmail);
-    return updatedUser;
+  private static buildSession(user: SessionUser) {
+    const payload = { id: user.id, role: user.role, isVerified: user.isVerified };
+    const accessToken = TokenService.generate(payload, JWT_ACCESS_SECRET!, JWT_ACCESS_EXPIRES_IN || "15m");
+    const refreshToken = TokenService.generate(payload, JWT_REFRESH_SECRET!, JWT_REFRESH_EXPIRES_IN || "7d");
+    return { user, accessToken, refreshToken };
   }
 }
 

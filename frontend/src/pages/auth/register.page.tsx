@@ -23,7 +23,7 @@ export default function RegisterPage() {
 
   const onSubmit = async (data: RegisterValues) => {
     try {
-      await api.post("/auth/register", { ...data, role: "USER" });
+      await api.post("/auth/sign-up", { ...data, role: "USER" });
       toast.success("Link verifikasi telah dikirim ke email Anda!");
       reset();
     } catch (err) {
@@ -39,7 +39,7 @@ export default function RegisterPage() {
         <h2 className="text-2xl font-bold text-slate-900 mb-1">Daftar Nestion</h2>
         <p className="text-sm text-slate-500 mb-6">Buat account penyewa baru</p>
       
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
             <input
