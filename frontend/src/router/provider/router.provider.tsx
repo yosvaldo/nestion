@@ -17,11 +17,10 @@ export default function RouterProvider() {
               <Route key={route.path || index} {...route} />
             ))}
           </Route>
-          <Route path="/app">
+
             {protectedRoutes.map((route: IRoute, index: number) => (
               <Route key={route.path || index} {...route} />
             ))}
-          </Route>
         </Route>
         <Route
           path="*"

@@ -1,5 +1,5 @@
 import { Menu, User as UserIcon } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,18 +7,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import useAuthStore from "@/stores/authStore";
 
-interface UserMenuProps {
-  isAuthenticated?: boolean;
-  userRole?: "USER" | "TENANT";
-  onLogout?: () => void;
-}
+export default function UserMenu(){
+  const navigate = useNavigate();
+  const { user, accessToken, logout } = useAuthStore();
 
-export default function UserMenu({
-  isAuthenticated = false,
-  userRole,
-  onLogout,
-}: UserMenuProps) {
+  const isAuthenticated = Boolean(accessToken && user);
+  const isTenant = user?.role === "TENANT";
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login");
+  };
+
   return (
     <div className="flex items-center font-sans">
       <DropdownMenu>
@@ -26,7 +28,15 @@ export default function UserMenu({
           <button className="flex items-center gap-3 border border-slate-200 bg-white px-3 py-1.5 rounded-full hover:shadow-md transition-all outline-none">
             <Menu className="w-4 h-4 text-slate-600" />
             <div className="bg-slate-200 text-slate-600 p-1 rounded-full">
-              <UserIcon className="w-4 h-4" />
+              {user?.avatarUrl? (
+                <img
+                  src={user.avatarUrl}
+                  alt={user.fullName || "User Avatar"}
+                  className="w-4 h-4 rounded-full object-cover"
+                />
+              ) : (
+                <UserIcon className="w-4 h-4" />
+              )}
             </div>
           </button>
         </DropdownMenuTrigger>
@@ -63,6 +73,24 @@ export default function UserMenu({
                 </Link>
               </DropdownMenuItem>
             </>
+          ) : isTenant ? (
+            <>
+              <DropdownMenuItem asChild>
+                <Link
+                  to="/tenant/dashboard"
+                  className="w-full flex items-center px-3 py-2 text-sm font-medium text-slate-700 rounded-xl hover:bg-slate-100 hover:text-amber-600 focus:bg-slate-100 focus:text-amber-600 cursor-pointer"
+                >
+                  Tenant Dashboard
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="bg-slate-100 my-1" />
+              <DropdownMenuItem
+                onClick={handleLogout}
+                className="w-full flex items-center px-3 py-2 text-sm font-medium rounded-xl text-red-600 hover:bg-red-50 focus:bg-red-50 cursor-pointer"
+              >
+                Log out
+              </DropdownMenuItem>
+            </>
           ) : (
             <>
               <DropdownMenuItem asChild>
@@ -81,22 +109,9 @@ export default function UserMenu({
                   My Bookings
                 </Link>
               </DropdownMenuItem>
-              {userRole === "TENANT" && (
-                <>
-                  <DropdownMenuSeparator className="bg-slate-100 my-1" />
-                  <DropdownMenuItem asChild>
-                    <Link
-                      to="/tenant/dashboard"
-                      className="w-full flex items-center px-3 py-2 text-sm font-medium text-slate-700 rounded-xl hover:bg-slate-100 hover:text-amber-600 focus:bg-slate-100 focus:text-amber-600 cursor-pointer"
-                    >
-                      Tenant Dashboard
-                    </Link>
-                  </DropdownMenuItem>
-                </>
-              )}
               <DropdownMenuSeparator className="bg-slate-100 my-1" />
               <DropdownMenuItem
-                onClick={onLogout}
+                onClick={handleLogout}
                 className="w-full flex items-center px-3 py-2 text-sm font-medium rounded-xl text-red-600 hover:bg-red-50 focus:bg-red-50 cursor-pointer"
               >
                 Log out

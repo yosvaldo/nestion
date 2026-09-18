@@ -40,7 +40,7 @@ export default function LoginPage() {
       if (from) {
         navigate(from, { replace: true });
       } else {
-        navigate(user.role === "TENANT" ? "/app/tenant/dashboard" : "/");
+        navigate(user.role === "TENANT" ? "/tenant/dashboard" : "/");
       }
     } catch (err) {
         const error = err as AxiosError<{ message?: string }>;

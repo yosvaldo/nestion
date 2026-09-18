@@ -7,6 +7,8 @@ import { updateProfileSchema, avatarFileSchema } from "@/validators/auth.validat
 import type { z } from "zod";
 import { api } from "@/configs/api.config";
 import type { User } from "@/stores/authStore";
+import SubmitButton from "../buttons/submit-button";
+
 
 type ProfileValues = z.infer<typeof updateProfileSchema>;
 
@@ -110,13 +112,14 @@ export default function ProfileInfoCard({ user, onUpdated }: ProfileInfoCardProp
           {errors.fullName && <p className="text-xs text-red-500 mt-1">{errors.fullName.message}</p>}
         </div>
 
-        <button
+        <SubmitButton label="Simpan Perubahana" process="Menyimpan..." disabled={isSubmitting} />
+        {/* <button
           type="submit"
           disabled={isSubmitting}
           className="px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold rounded-lg text-sm transition-colors disabled:opacity-50 cursor-pointer"
         >
           {isSubmitting ? "Menyimpan..." : "Simpan Perubahan"}
-        </button>
+        </button> */}
       </form>
     </section>
   );

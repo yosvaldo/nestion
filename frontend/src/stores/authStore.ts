@@ -96,6 +96,7 @@ const useAuthStore = create<AuthState>()(
             name: "auth-storage",
             partialize: (state) => ({
                 user: state.user,
+                accessToken: state.accessToken,
             }),
         }
     )
