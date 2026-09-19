@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Verifikasi Akun Nestion</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f8fafc;font-family:Arial,Helvetica,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8fafc;padding:32px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e2e8f0;">
+          <tr>
+            <td style="background:#0f172a;padding:24px 32px;">
+              <span style="color:#f59e0b;font-size:20px;font-weight:bold;">Nestion</span>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:32px;">
+              <h1 style="margin:0 0 16px;font-size:22px;color:#0f172a;">Verifikasi akun Anda</h1>
+              <p style="margin:0 0 16px;font-size:14px;color:#475569;line-height:1.6;">Halo{{#if fullName}} {{fullName}}{{/if}},</p>
+              <p style="margin:0 0 24px;font-size:14px;color:#475569;line-height:1.6;">
+                Terima kasih telah mendaftar sebagai <strong>{{role}}</strong> di Nestion.
+                Klik tombol di bawah ini untuk memverifikasi email Anda dan membuat password.
+                Link ini berlaku selama <strong>1 jam</strong>.
+              </p>
+              <table role="presentation" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="border-radius:10px;background:#f59e0b;">
+                    <a href="{{verifyUrl}}" target="_blank" style="display:inline-block;padding:12px 28px;font-size:14px;font-weight:bold;color:#0f172a;text-decoration:none;">Verifikasi &amp; Buat Password</a>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin:24px 0 0;font-size:12px;color:#94a3b8;">
+                Jika tombol tidak berfungsi, salin link berikut:
+                <a href="{{verifyUrl}}" style="color:#f59e0b;word-break:break-all;">{{verifyUrl}}</a>
+              </p>
+              <p style="margin:16px 0 0;font-size:12px;color:#94a3b8;">
+                Jika Anda tidak mendaftar di Nestion, abaikan email ini.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

@@ -29,7 +29,7 @@ export const appErrorHandler = (
       case "P2025":
         return next(new AppError("Record not found", 404));
       default:
-        return next(new AppError("Database request error", 400));
+        return next(new AppError(error.message, 400));
     }
   }
 

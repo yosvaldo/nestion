@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import propertyService from "../services/property.service.js";
-import { responseBuilder } from "../utils/response-builder.utils.js";
+import { responseBuilder } from "../utils/response-builder.util.js";
 import { getPropertiesQuerySchema } from "../validators/property.validator.js";
 
 class PropertyController {

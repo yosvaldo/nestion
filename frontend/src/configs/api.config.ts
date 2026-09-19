@@ -1,4 +1,4 @@
-import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
+import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
 import useAuthStore from "../stores/authStore";
 
 let accessTokenMemory: string | null = null;
