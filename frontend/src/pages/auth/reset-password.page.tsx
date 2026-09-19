@@ -11,6 +11,7 @@ import type { z } from "zod";
 import { api } from "@/configs/api.config";
 import SEO from "@/components/seo/seo";
 import type { AxiosError } from "axios";
+import SubmitButton from "@/components/buttons/submit-button";
 
 type RequestValues = z.infer<typeof requestResetPasswordSchema>;
 type ResetValues = z.infer<typeof resetPasswordSchema>;
@@ -62,14 +63,7 @@ function RequestResetForm() {
           <input type="email" placeholder="nama@email.com" {...register("email")} className={inputClass} />
           {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>}
         </div>
-
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold rounded-lg text-sm transition-colors disabled:opacity-50 cursor-pointer"
-        >
-          {isSubmitting ? "Mengirim..." : "Kirim Link Reset"}
-        </button>
+        <SubmitButton label="Kirim Link Reset" process="Mengirim Email..." disabled={isSubmitting} />
       </form>
 
       <p className="text-xs text-center text-slate-500 mt-6">

@@ -8,6 +8,7 @@ import {
 import type { z } from "zod";
 import { api } from "@/configs/api.config";
 import type { User } from "@/stores/authStore";
+import SubmitButton from "@/components/buttons/submit-button";
 
 type EmailValues = z.infer<typeof updateEmailSchema>;
 type PasswordValues = z.infer<typeof changePasswordSchema>;
@@ -19,9 +20,6 @@ interface SecurityCardProps {
 
 const inputClass =
   "w-full px-3.5 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500";
-
-const buttonClass =
-  "px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-lg text-sm transition-colors disabled:opacity-50 cursor-pointer";
 
 export default function SecurityCard({ user, onEmailUpdated }: SecurityCardProps) {
   const emailForm = useForm<EmailValues>({
@@ -73,9 +71,7 @@ export default function SecurityCard({ user, onEmailUpdated }: SecurityCardProps
               </p>
             )}
           </div>
-          <button type="submit" disabled={emailForm.formState.isSubmitting} className={buttonClass}>
-            {emailForm.formState.isSubmitting ? "Mengirim..." : "Perbarui Email"}
-          </button>
+          <SubmitButton label="Perbarui Email" process="Mengirim" disabled={emailForm.formState.isSubmitting} />
         </form>
       </div>
 
@@ -112,10 +108,7 @@ export default function SecurityCard({ user, onEmailUpdated }: SecurityCardProps
               </p>
             )}
           </div>
-
-          <button type="submit" disabled={passwordForm.formState.isSubmitting} className={buttonClass}>
-            {passwordForm.formState.isSubmitting ? "Menyimpan..." : "Ubah Password"}
-          </button>
+          <SubmitButton label="Ubah Password" process="Menyimpan..." disabled={passwordForm.formState.isSubmitting} />
         </form>
       </div>
     </section>

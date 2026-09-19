@@ -7,6 +7,7 @@ import { api } from "@/configs/api.config";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import type { AxiosError } from "axios";
+import SubmitButton from "@/components/buttons/submit-button";
 
 type RegisterValues = z.infer<typeof signUpSchema>;
 
@@ -92,14 +93,7 @@ export default function TenantRegisterPage() {
               <p className="text-xs text-red-500 mt-1">{errors.bankDetails.bankAccountNumber.message}</p>
             )}
           </div>
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold rounded-lg text-sm transition-colors disabled:opacity-50 cursor-pointer"
-          >
-            {isSubmitting ? "Kirim Email..." : "Daftar Partner Tenant"}
-          </button>
+          <SubmitButton label="Daftar menjadi Tenant" process="Mengirim Email..." disabled={isSubmitting} />
         </form>
 
         <p className="text-xs text-center text-slate-500 mt-6">

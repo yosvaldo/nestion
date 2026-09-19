@@ -8,6 +8,7 @@ import type { z } from "zod";
 import { api } from "@/configs/api.config";
 import useAuthStore from "@/stores/authStore";
 import type { AxiosError } from "axios";
+import SubmitButton from "@/components/buttons/submit-button";
 
 type SignInValues = z.infer<typeof signInSchema>;
 
@@ -82,14 +83,7 @@ export default function LoginPage() {
             />
             {errors.password && <p className="text-xs text-red-500 mt-1">{errors.password.message}</p>}
           </div>
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold rounded-lg text-sm transition-colors disabled:opacity-50 cursor-pointer"
-          >
-            {isSubmitting ? "Memproses..." : "Masuk"}
-          </button>
+          <SubmitButton label="Masuk" process="Memproses..." disabled={isSubmitting} />
         </form>
 
         <p className="text-xs text-center text-slate-500 mt-6">

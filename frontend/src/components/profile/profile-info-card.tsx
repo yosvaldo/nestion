@@ -111,15 +111,7 @@ export default function ProfileInfoCard({ user, onUpdated }: ProfileInfoCardProp
           <input placeholder="Nama Anda" {...register("fullName")} className={inputClass} />
           {errors.fullName && <p className="text-xs text-red-500 mt-1">{errors.fullName.message}</p>}
         </div>
-
-        <SubmitButton label="Simpan Perubahana" process="Menyimpan..." disabled={isSubmitting} />
-        {/* <button
-          type="submit"
-          disabled={isSubmitting}
-          className="px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold rounded-lg text-sm transition-colors disabled:opacity-50 cursor-pointer"
-        >
-          {isSubmitting ? "Menyimpan..." : "Simpan Perubahan"}
-        </button> */}
+        <SubmitButton label="Simpan Perubahan" process="Menyimpan..." disabled={isSubmitting} />
       </form>
     </section>
   );

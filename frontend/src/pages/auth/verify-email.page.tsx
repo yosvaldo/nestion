@@ -7,6 +7,7 @@ import type { z } from "zod";
 import { api } from "@/configs/api.config";
 import SEO from "@/components/seo/seo";
 import type { AxiosError } from "axios";
+import SubmitButton from "@/components/buttons/submit-button";
 
 type VerifyValues = z.infer<typeof verifyEmailSchema>;
 
@@ -78,14 +79,7 @@ export default function VerifyEmailPage() {
               </p>
             )}
           </div>
-
-          <button
-            type="submit"
-            disabled={isSubmitting || !token}
-            className="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold rounded-lg text-sm transition-colors disabled:opacity-50 cursor-pointer"
-          >
-            {isSubmitting ? "Memproses..." : "Verifikasi account"}
-          </button>
+          <SubmitButton label="Verifikasi Account" process="Memproses..." disabled={isSubmitting} />
         </form>
       </div>
     </>

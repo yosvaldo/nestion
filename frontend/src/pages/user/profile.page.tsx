@@ -37,17 +37,17 @@ export default function ProfilePage() {
   return (
     <>
       <SEO title="Profil Saya - Nestion" description="Kelola profil account Anda" />
-      <div className="p-4 sm:p-8 font-sans max-w-3xl mx-auto space-y-6">
+      <div className="p-6 sm:p-8 my-8 bg-white rounded-2xl border border-slate-100 shadow-sm font-sans max-w-3xl mx-auto space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Profil Saya</h1>
           <p className="text-sm text-slate-500 mt-1">Kelola informasi account dan keamanan Anda.</p>
         </div>
 
         {user && (
-          <>
+          <div className="space-y-6">
             <ProfileInfoCard user={user} onUpdated={setUser} />
             <SecurityCard user={user} onEmailUpdated={setUser} />
-          </>
+          </div>
         )}
       </div>
     </>

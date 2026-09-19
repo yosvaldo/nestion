@@ -4,11 +4,11 @@ import ProfilePage from "@/pages/user/profile.page";
 import UserOrdersPage from "@/pages/user/order.page";
 import TenantDashboardPage from "@/pages/tenant/dashboard.page";
 
-const protectedRoutes: IRoute[] = [
+export const userProtectedRoutes: IRoute[] = [
   {
     path: "profile",
     element: (
-      <ProtectedRoute requireVerified>
+      <ProtectedRoute allowedRole="USER" requireVerified>
         <ProfilePage />
       </ProtectedRoute>
     ),
@@ -21,6 +21,9 @@ const protectedRoutes: IRoute[] = [
       </ProtectedRoute>
     ),
   },
+];
+
+export const tenantProtectedRoutes: IRoute[] = [
   {
     path: "tenant/dashboard",
     element: (
@@ -30,5 +33,3 @@ const protectedRoutes: IRoute[] = [
     ),
   },
 ];
-
-export default protectedRoutes;
