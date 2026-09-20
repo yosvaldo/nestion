@@ -13,4 +13,26 @@ export const getPropertiesQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(50).optional().default(10),
 });
 
+export const createPropertySchema = z.object({
+  name: z.string().min(3, "Name must be at least 3 characters"),
+  categoryId: z.string().uuid("Invalid category ID"),
+  description: z.string().optional(),
+  city: z.string().min(2, "City is required"),
+  address: z.string().optional(),
+});
+
+export const createRoomSchema = z.object({
+  name: z.string().min(2, "Room name is required"),
+  description: z.string().optional(),
+  basePrice: z.number().int().positive("Price must be a positive integer"),
+  guestCapacity: z.number().int().min(1).default(2),
+});
+
+export const createPeakSeasonRateSchema = z.object({
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
+  rateType: z.enum(["NOMINAL", "PERCENTAGE"]),
+  rateValue: z.number().int().positive(),
+});
+
 export type GetPropertiesQueryInput = z.infer<typeof getPropertiesQuerySchema>;

@@ -4,6 +4,7 @@ import type { PropertyFilterParams } from "../types/property.type.js";
 class PropertyRepository {
   async findDistinctCities(): Promise<string[]> {
     const properties = await prisma.property.findMany({
+      where: { deletedAt: null },
       select: { city: true },
       distinct: ["city"],
       orderBy: { city: "asc" },
@@ -13,16 +14,35 @@ class PropertyRepository {
 
   async findFeatured() {
     return prisma.property.findMany({
+      where: { deletedAt: null },
       take: 5,
       include: {
         category: true,
         pictures: true,
         rooms: {
+          where: { deletedAt: null },
+          include: { peakSeasonRates: { where: { deletedAt: null } } },
           orderBy: { basePrice: "asc" },
-          take: 1,
         },
       },
       orderBy: { createdAt: "desc" },
+    });
+  }
+
+  async findById(id: string) {
+    return prisma.property.findFirst({
+      where: { id, deletedAt: null },
+      include: {
+        category: true,
+        pictures: true,
+        rooms: {
+          where: { deletedAt: null },
+          include: {
+            peakSeasonRates: { where: { deletedAt: null } },
+            unavailabilities: true,
+          },
+        },
+      },
     });
   }
 
@@ -38,7 +58,7 @@ class PropertyRepository {
       limit = 10,
     } = params;
 
-    const whereClause: any = {};
+    const whereClause: any = { deletedAt: null };
 
     if (city) {
       whereClause.city = { contains: city, mode: "insensitive" };
@@ -52,25 +72,35 @@ class PropertyRepository {
       whereClause.name = { contains: name, mode: "insensitive" };
     }
 
-    if (guestCapacity || (checkInDate && checkOutDate)) {
-      whereClause.rooms = {
-        some: {
-          ...(guestCapacity ? { guestCapacity: { gte: guestCapacity } } : {}),
-          ...(checkInDate && checkOutDate
-            ? {
-                unavailabilities: {
-                  none: {
-                    unavailabilityDate: {
-                      gte: checkInDate,
-                      lte: checkOutDate,
-                    },
-                  },
-                },
-              }
-            : {}),
+    const roomWhere: any = { deletedAt: null };
+
+    if (guestCapacity) {
+      roomWhere.guestCapacity = { gte: guestCapacity };
+    }
+
+    if (checkInDate && checkOutDate) {
+      roomWhere.unavailabilities = {
+        none: {
+          unavailabilityDate: {
+            gte: checkInDate,
+            lte: checkOutDate,
+          },
+        },
+      };
+      roomWhere.orders = {
+        none: {
+          status: { in: ["MENUNGGU_PEMBAYARAN", "MENUNGGU_KONFIRMASI_PEMBAYARAN", "DIPROSES"] },
+          OR: [
+            {
+              checkInDate: { lte: checkOutDate },
+              checkOutDate: { gte: checkInDate },
+            },
+          ],
         },
       };
     }
+
+    whereClause.rooms = { some: roomWhere };
 
     const total = await prisma.property.count({ where: whereClause });
 
@@ -80,7 +110,10 @@ class PropertyRepository {
         category: true,
         pictures: true,
         rooms: {
-          orderBy: { basePrice: "asc" },
+          where: roomWhere,
+          include: {
+            peakSeasonRates: { where: { deletedAt: null } },
+          },
         },
       },
       skip: (page - 1) * limit,

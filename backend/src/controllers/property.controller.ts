@@ -30,6 +30,20 @@ class PropertyController {
     }
   };
 
+  getById = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+      const monthQuery = req.query.month ? new Date(req.query.month as string) : undefined;
+      const property = await propertyService.getPropertyById(id, monthQuery);
+
+      return res.send(
+        responseBuilder(200, "Property detail fetched successfully.", property)
+      );
+    } catch (error) {
+      next(error);
+    }
+  };
+
   getAll = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const queryParams = await getPropertiesQuerySchema.parseAsync(req.query);

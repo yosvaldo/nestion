@@ -10,3 +10,28 @@ export interface PropertyFilterParams {
   page?: number;
   limit?: number;
 }
+
+export interface CreatePropertyInput {
+  name: string;
+  categoryId: string;
+  description?: string;
+  city: string;
+  address?: string;
+  pictures?: string[];
+}
+
+export interface CreateRoomInput {
+  propertyId: string;
+  name: string;
+  description?: string;
+  basePrice: number;
+  guestCapacity?: number;
+}
+
+export interface PeakSeasonRateInput {
+  roomId: string;
+  startDate: Date;
+  endDate: Date;
+  rateType: "NOMINAL" | "PERCENTAGE";
+  rateValue: number;
+}

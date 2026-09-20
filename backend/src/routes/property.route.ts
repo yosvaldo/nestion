@@ -5,6 +5,7 @@ const propertyRoute = Router();
 
 propertyRoute.get("/cities", propertyController.getCities);
 propertyRoute.get("/featured", propertyController.getFeatured);
+propertyRoute.get("/:id", propertyController.getById);
 propertyRoute.get("/", propertyController.getAll);
 
 export default propertyRoute;
