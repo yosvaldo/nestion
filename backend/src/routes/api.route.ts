@@ -2,6 +2,9 @@ import express, { Router } from "express";
 import { APP_NAME } from "../configs/env.config.js";
 import propertyRoute from "./property.route.js";
 import authRouter from "./auth.route.js";
+import categoryRoute from "./category.route.js";
+import tenantPropertyRoute from "./tenant-property.route.js";
+import roomManagementRoute from "./room-management.route.js";
 
 const apiRouter: Router = express.Router();
 
@@ -11,5 +14,11 @@ apiRouter.use("/health", (_, res) => res.send("OK"));
 apiRouter.use("/properties", propertyRoute);
 
 apiRouter.use("/auth", authRouter);
+
+apiRouter.use("/categories", categoryRoute);
+
+apiRouter.use("/tenant/properties", tenantPropertyRoute);
+
+apiRouter.use("/room-management", roomManagementRoute);
 
 export default apiRouter;
