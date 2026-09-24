@@ -28,19 +28,6 @@ class TenantPropertyController {
     }
   };
 
-  getMyPropertyById = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const tenantId = this.getTenantId(req);
-      const id = req.params.id as string;
-      const property = await tenantPropertyService.getMyPropertyById(id, tenantId);
-      return res.send(
-        responseBuilder(200, "Property fetched successfully.", property)
-      );
-    } catch (error) {
-      next(error);
-    }
-  };
-
   createProperty = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const tenantId = this.getTenantId(req);
@@ -85,11 +72,29 @@ class TenantPropertyController {
     }
   };
 
+  getMyRooms = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const tenantId = this.getTenantId(req);
+      const propertyId = req.params.propertyId as string;
+      const rooms = await tenantPropertyService.getRoomsByPropertyId(propertyId, tenantId);
+      return res.send(
+        responseBuilder(200, "Property rooms fetched successfully.", rooms)
+      );
+    } catch (error) {
+      next(error);
+    }
+  };
+
   createRoom = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const tenantId = this.getTenantId(req);
       const propertyId = req.params.propertyId as string;
-      const body = await createRoomSchema.parseAsync(req.body);
+
+      if (!req.body) throw new AppError("req.body is undefined", 400)
+      const {basePrice} = req.body
+      const body = await createRoomSchema.parseAsync({...req.body, basePrice: Number(basePrice)})
+      console.log(body);
+
       const room = await tenantPropertyService.createRoom(
         propertyId,
         tenantId,

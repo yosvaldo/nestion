@@ -66,8 +66,8 @@ model Property {
   id          String            @id @default(uuid())
   tenantId    String            @map("tenant_id")
   tenant      User              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  categoryId  String            @map("category_id")
-  category    Category          @relation(fields: [categoryId], references: [id])
+  categoryId  String?            @map("category_id")
+  category    Category?          @relation(fields: [categoryId], references: [id])
   name        String
   description String?           @db.Text
   city        String

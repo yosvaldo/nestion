@@ -12,13 +12,9 @@ class RoomManagementService {
     if (ownerId !== tenantId) throw new AppError("Access denied.", 403);
   }
 
-  async setUnavailability(
-    roomId: string,
-    tenantId: string,
-    data: SetUnavailabilityInput
-  ) {
+  async setUnavailability(roomId: string, tenantId: string, data: SetUnavailabilityInput) {
     await this.verifyOwner(roomId, tenantId);
-
+    
     const dates: Date[] = [];
     const current = new Date(data.startDate);
     const last = new Date(data.endDate);
@@ -40,11 +36,7 @@ class RoomManagementService {
     return roomManagementRepository.deleteUnavailability(id);
   }
 
-  async setPeakSeasonRate(
-    roomId: string,
-    tenantId: string,
-    data: SetPeakSeasonRateInput
-  ) {
+  async setPeakSeasonRate(roomId: string, tenantId: string, data: SetPeakSeasonRateInput) {
     await this.verifyOwner(roomId, tenantId);
     return roomManagementRepository.createPeakSeasonRate(roomId, data);
   }

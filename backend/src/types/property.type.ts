@@ -13,11 +13,19 @@ export interface PropertyFilterParams {
 
 export interface CreatePropertyInput {
   name: string;
-  categoryId: string;
+  categoryId?: string;
   description?: string;
   city: string;
   address?: string;
-  pictures?: string[];
+  pictureUrls?: string[];
+}
+
+export interface UpdatePropertyInput {
+  name?: string;
+  categoryId?: string;
+  description?: string;
+  city?: string;
+  address?: string;
 }
 
 export interface CreateRoomInput {
@@ -25,6 +33,14 @@ export interface CreateRoomInput {
   name: string;
   description?: string;
   basePrice: number;
+  guestCapacity?: number;
+}
+
+export interface UpdateRoomInput {
+  propertyId: string;
+  name?: string;
+  description?: string;
+  basePrice?: number;
   guestCapacity?: number;
 }
 

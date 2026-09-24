@@ -27,14 +27,21 @@ class PropertyService {
       const calendar = [];
       for (let day = 1; day <= daysInMonth; day++) {
         const currentDate = new Date(year, month, day);
+        const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+
         const dailyPrice = calculateDailyPrice(currentDate, room.basePrice, room.peakSeasonRates);
         
-        const isUnavailable = room.unavailabilities.some(
-          (u) => new Date(u.unavailabilityDate).toDateString() === currentDate.toDateString()
-        );
+        const isUnavailable = room.unavailabilities.some((u) => {
+          const uDate = new Date(u.unavailabilityDate);
+          return (
+            uDate.getFullYear() === year &&
+            uDate.getMonth() === month &&
+            uDate.getDate() === day
+          );
+        });
 
         calendar.push({
-          date: currentDate.toISOString().split("T")[0],
+          date: dateStr,
           price: dailyPrice,
           isAvailable: !isUnavailable,
         });

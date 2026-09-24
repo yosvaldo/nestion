@@ -5,7 +5,7 @@ import type {
   CreateRoomInput,
   UpdatePropertyInput,
   UpdateRoomInput,
-} from "../types/tenant-property.type.js";
+} from "../types/property.type.js";
 
 class TenantPropertyService {
   async getMyProperties(tenantId: string) {

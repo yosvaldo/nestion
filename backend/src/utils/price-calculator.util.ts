@@ -1,8 +1,8 @@
 import type { RateType } from "../generated/prisma/client.js";
 
 interface PeakRate {
-  startDate: Date;
-  endDate: Date;
+  startDate: Date | string;
+  endDate: Date | string;
   rateType: RateType;
   rateValue: number;
 }
@@ -15,8 +15,11 @@ export const calculateDailyPrice = (
   const targetTime = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
 
   const matchingRate = peakRates.find((rate) => {
-    const start = new Date(rate.startDate.getFullYear(), rate.startDate.getMonth(), rate.startDate.getDate()).getTime();
-    const end = new Date(rate.endDate.getFullYear(), rate.endDate.getMonth(), rate.endDate.getDate()).getTime();
+    const startObj = new Date(rate.startDate);
+    const endObj = new Date(rate.endDate);
+
+    const start = new Date(startObj.getFullYear(), startObj.getMonth(), startObj.getDate()).getTime();
+    const end = new Date(endObj.getFullYear(), endObj.getMonth(), endObj.getDate()).getTime();
     return targetTime >= start && targetTime <= end;
   });
 
