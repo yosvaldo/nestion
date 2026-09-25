@@ -1,9 +1,6 @@
 import type { PeakSeasonRate, RoomUnavailability } from "../generated/prisma/client.js";
 import { prisma } from "../libs/prisma.client.js";
-import type {
-  SetPeakSeasonRateInput,
-  SetUnavailabilityInput,
-} from "../types/room-management.type.js";
+import type { SetPeakSeasonRateInput } from "../types/room-management.type.js";
 
 class RoomManagementRepository {
   async findRoomOwner(roomId: string): Promise<string | null> {
@@ -12,6 +9,14 @@ class RoomManagementRepository {
       select: { property: { select: { tenantId: true } } },
     });
     return room?.property?.tenantId || null;
+  }
+
+  async findUnavailabilityById(id: string): Promise<RoomUnavailability | null> {
+    return prisma.roomUnavailability.findUnique({ where: { id } });
+  }
+
+  async findPeakSeasonRateById(id: string): Promise<PeakSeasonRate | null> {
+    return prisma.peakSeasonRate.findFirst({ where: { id, deletedAt: null } });
   }
 
   async createUnavailabilities(
@@ -25,6 +30,7 @@ class RoomManagementRepository {
         unavailabilityDate: d,
         reason,
       })),
+      skipDuplicates: true,
     });
   }
 

@@ -7,7 +7,7 @@ import {
   createRoomSchema,
   updatePropertySchema,
   updateRoomSchema,
-} from "../validators/tenant-property.validator.js";
+} from "../validators/property.validator.js";
 
 class TenantPropertyController {
   private getTenantId(req: Request): string {
@@ -46,11 +46,7 @@ class TenantPropertyController {
       const tenantId = this.getTenantId(req);
       const id = req.params.id as string;
       const body = await updatePropertySchema.parseAsync(req.body);
-      const property = await tenantPropertyService.updateProperty(
-        id,
-        tenantId,
-        body
-      );
+      const property = await tenantPropertyService.updateProperty(id, tenantId, body);
       return res.send(
         responseBuilder(200, "Property updated successfully.", property)
       );
@@ -90,16 +86,11 @@ class TenantPropertyController {
       const tenantId = this.getTenantId(req);
       const propertyId = req.params.propertyId as string;
 
-      if (!req.body) throw new AppError("req.body is undefined", 400)
+      if (!req.body) throw new AppError("Request body is missing", 400)
       const {basePrice} = req.body
       const body = await createRoomSchema.parseAsync({...req.body, basePrice: Number(basePrice)})
-      console.log(body);
 
-      const room = await tenantPropertyService.createRoom(
-        propertyId,
-        tenantId,
-        body
-      );
+      const room = await tenantPropertyService.createRoom(propertyId, tenantId, body);
       return res
         .status(201)
         .send(responseBuilder(201, "Room created successfully.", room));
@@ -113,11 +104,7 @@ class TenantPropertyController {
       const tenantId = this.getTenantId(req);
       const roomId = req.params.roomId as string;
       const body = await updateRoomSchema.parseAsync(req.body);
-      const room = await tenantPropertyService.updateRoom(
-        roomId,
-        tenantId,
-        body
-      );
+      const room = await tenantPropertyService.updateRoom(roomId, tenantId, body);
       return res.send(
         responseBuilder(200, "Room updated successfully.", room)
       );

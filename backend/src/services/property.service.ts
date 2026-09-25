@@ -12,16 +12,50 @@ class PropertyService {
     return propertyRepository.findFeatured();
   }
 
-  async getPropertyById(id: string, targetMonth?: Date) {
-    const property = await propertyRepository.findById(id);
-    if (!property) {
-      throw new AppError("Property not found", 404);
+  private isRoomUnavailableOnDate(date: Date, unavailabilities: any[], orders: any[]): boolean {
+    const targetTime = date.getTime();
+    const isExplicitlyUnavailable = unavailabilities.some((u) => {
+      const uDate = new Date(u.unavailabilityDate);
+      return uDate.getFullYear() === date.getFullYear() &&
+             uDate.getMonth() === date.getMonth() &&
+             uDate.getDate() === date.getDate();
+    });
+
+    if (isExplicitlyUnavailable) return true;
+
+    return orders.some((o) => {
+      const checkIn = new Date(o.checkInDate).getTime();
+      const checkOut = new Date(o.checkOutDate).getTime();
+      return targetTime >= checkIn && targetTime < checkOut;
+    });
+  }
+
+  private generateRoomCalendar(room: any, year: number, month: number) {
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const calendar = [];
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const currentDate = new Date(year, month - 1, day);
+      const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+      const dailyPrice = calculateDailyPrice(currentDate, room.basePrice, room.peakSeasonRates);
+      const isUnavailable = this.isRoomUnavailableOnDate(currentDate, room.unavailabilities || [], room.orders || []);
+
+      calendar.push({
+        date: dateStr,
+        price: dailyPrice,
+        isAvailable: !isUnavailable,
+      });
     }
 
-    const referenceDate = targetMonth || new Date();
-    const year = referenceDate.getFullYear();
-    const month = referenceDate.getMonth();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    return calendar;
+  }
+
+  async getPropertyById(id: string, year?: number, month?: number) {
+    const property = await propertyRepository.findById(id);
+    if (!property) throw new AppError("Property not found", 404);
+
+    const targetYear = year || new Date().getFullYear();
+    const targetMonth = month || new Date().getMonth() + 1;
 
     const roomsWithCalendar = property.rooms.map((room) => {
       const calendar = [];

@@ -5,7 +5,7 @@ import type {
   CreateRoomInput,
   UpdatePropertyInput,
   UpdateRoomInput,
-} from "../types/tenant-property.type.js";
+} from "../types/property.type.js";
 
 class TenantPropertyRepository {
   async findTenantProperties(tenantId: string): Promise<Property[]> {
@@ -74,6 +74,16 @@ class TenantPropertyRepository {
       data: { deletedAt: new Date() },
     });
   }
+
+  async findRoomsByPropertyId(propertyId: string): Promise<Room[]> {
+  return prisma.room.findMany({
+    where: {
+      propertyId,
+      deletedAt: null,
+    },
+    orderBy: { createdAt: "desc" },
+  });
+}
 
   async createRoom(propertyId: string, data: CreateRoomInput): Promise<Room> {
     return prisma.room.create({

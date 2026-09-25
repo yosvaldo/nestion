@@ -47,8 +47,9 @@ class RoomManagementController {
 
   deleteUnavailability = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const tenantId = this.getTenantId(req);
       const id = req.params.id as string;
-      await roomManagementService.deleteUnavailability(id);
+      await roomManagementService.deleteUnavailability(id, tenantId);
       return res.send(
         responseBuilder(200, "Unavailability deleted successfully.", null)
       );
@@ -90,8 +91,9 @@ class RoomManagementController {
 
   deletePeakSeasonRate = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const tenantId = this.getTenantId(req);
       const id = req.params.id as string;
-      await roomManagementService.deletePeakSeasonRate(id);
+      await roomManagementService.deletePeakSeasonRate(id, tenantId);
       return res.send(
         responseBuilder(200, "Peak season rate deleted successfully.", null)
       );

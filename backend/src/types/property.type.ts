@@ -29,7 +29,6 @@ export interface UpdatePropertyInput {
 }
 
 export interface CreateRoomInput {
-  propertyId: string;
   name: string;
   description?: string;
   basePrice: number;
@@ -37,7 +36,7 @@ export interface CreateRoomInput {
 }
 
 export interface UpdateRoomInput {
-  propertyId: string;
+  propertyId?: string;
   name?: string;
   description?: string;
   basePrice?: number;

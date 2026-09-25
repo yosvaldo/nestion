@@ -32,7 +32,11 @@ class RoomManagementService {
     return roomManagementRepository.findUnavailabilitiesByRoom(roomId);
   }
 
-  async deleteUnavailability(id: string) {
+  async deleteUnavailability(id: string, tenantId: string) {
+    const record = await roomManagementRepository.findUnavailabilityById(id);
+    if (!record) throw new AppError("Unavailability record not found.", 404);
+    await this.verifyOwner(record.roomId, tenantId);
+
     return roomManagementRepository.deleteUnavailability(id);
   }
 
@@ -46,7 +50,11 @@ class RoomManagementService {
     return roomManagementRepository.findPeakSeasonRatesByRoom(roomId);
   }
 
-  async deletePeakSeasonRate(id: string) {
+  async deletePeakSeasonRate(id: string, tenantId: string) {
+    const record = await roomManagementRepository.findPeakSeasonRateById(id);
+    if (!record) throw new AppError("Peak season rate not found.", 404);
+    await this.verifyOwner(record.roomId, tenantId);
+
     return roomManagementRepository.deletePeakSeasonRate(id);
   }
 

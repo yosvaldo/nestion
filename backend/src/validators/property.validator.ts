@@ -13,6 +13,11 @@ export const getPropertiesQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(50).optional().default(10),
 });
 
+export const getCalendarQuerySchema = z.object({
+  year: z.coerce.number().int().min(2020).max(2100).optional().default(() => new Date().getFullYear()),
+  month: z.coerce.number().int().min(1).max(12).optional().default(() => new Date().getMonth() + 1),
+});
+
 export const createPropertySchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters"),
   categoryId: z.uuid("Invalid category ID").optional(),
@@ -40,3 +45,4 @@ export const createPeakSeasonRateSchema = z.object({
 });
 
 export type GetPropertiesQueryInput = z.infer<typeof getPropertiesQuerySchema>;
+export type GetCalendarQueryInput = z.infer<typeof getCalendarQuerySchema>;

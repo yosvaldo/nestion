@@ -13,10 +13,7 @@ class TenantPropertyService {
   }
 
   async getMyPropertyById(id: string, tenantId: string) {
-    const property = await tenantPropertyRepository.findTenantPropertyById(
-      id,
-      tenantId
-    );
+    const property = await tenantPropertyRepository.findTenantPropertyById(id, tenantId);
     if (!property) {
       throw new AppError("Property not found or access denied.", 404);
     }
@@ -27,11 +24,7 @@ class TenantPropertyService {
     return tenantPropertyRepository.createProperty(tenantId, data);
   }
 
-  async updateProperty(
-    id: string,
-    tenantId: string,
-    data: UpdatePropertyInput
-  ) {
+  async updateProperty(id: string, tenantId: string, data: UpdatePropertyInput) {
     await this.getMyPropertyById(id, tenantId);
     return tenantPropertyRepository.updateProperty(id, data);
   }
@@ -41,20 +34,17 @@ class TenantPropertyService {
     return tenantPropertyRepository.deleteProperty(id);
   }
 
-  async createRoom(
-    propertyId: string,
-    tenantId: string,
-    data: CreateRoomInput
-  ) {
+  async getRoomsByPropertyId(propertyId: string, tenantId: string) {
+    await this.getMyPropertyById(propertyId, tenantId);
+    return tenantPropertyRepository.findRoomsByPropertyId(propertyId);
+  }
+
+  async createRoom(propertyId: string, tenantId: string, data: CreateRoomInput) {
     await this.getMyPropertyById(propertyId, tenantId);
     return tenantPropertyRepository.createRoom(propertyId, data);
   }
 
-  async updateRoom(
-    roomId: string,
-    tenantId: string,
-    data: UpdateRoomInput
-  ) {
+  async updateRoom(roomId: string, tenantId: string, data: UpdateRoomInput) {
     const room = await tenantPropertyRepository.findRoomById(roomId);
     if (!room) throw new AppError("Room not found.", 404);
 

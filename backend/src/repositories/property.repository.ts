@@ -1,6 +1,12 @@
 import { prisma } from "../libs/prisma.client.js";
 import type { PropertyFilterParams } from "../types/property.type.js";
 
+const ACTIVE_ORDER_STATUSES = [
+  "MENUNGGU_PEMBAYARAN",
+  "MENUNGGU_KONFIRMASI_PEMBAYARAN",
+  "DIPROSES",
+];
+
 class PropertyRepository {
   async findDistinctCities(): Promise<string[]> {
     const properties = await prisma.property.findMany({
@@ -40,6 +46,9 @@ class PropertyRepository {
           include: {
             peakSeasonRates: { where: { deletedAt: null } },
             unavailabilities: true,
+            orders: {
+              where: { status: { in: ACTIVE_ORDER_STATUSES }}
+            }
           },
         },
       },
@@ -47,61 +56,27 @@ class PropertyRepository {
   }
 
   async findManyWithFilters(params: PropertyFilterParams) {
-    const {
-      city,
-      categoryId,
-      name,
-      guestCapacity,
-      checkInDate,
-      checkOutDate,
-      page = 1,
-      limit = 10,
-    } = params;
-
+    const { city, categoryId, name, guestCapacity, checkInDate, checkOutDate, page = 1, limit = 10 } = params;
     const whereClause: any = { deletedAt: null };
 
-    if (city) {
-      whereClause.city = { contains: city, mode: "insensitive" };
-    }
-
-    if (categoryId) {
-      whereClause.categoryId = categoryId;
-    }
-
-    if (name) {
-      whereClause.name = { contains: name, mode: "insensitive" };
-    }
+    if (city) whereClause.city = { contains: city, mode: "insensitive" };
+    if (categoryId) whereClause.categoryId = categoryId;
+    if (name) whereClause.name = { contains: name, mode: "insensitive" };
 
     const roomWhere: any = { deletedAt: null };
-
-    if (guestCapacity) {
-      roomWhere.guestCapacity = { gte: guestCapacity };
-    }
+    if (guestCapacity) roomWhere.guestCapacity = { gte: guestCapacity };
 
     if (checkInDate && checkOutDate) {
-      roomWhere.unavailabilities = {
-        none: {
-          unavailabilityDate: {
-            gte: checkInDate,
-            lte: checkOutDate,
-          },
-        },
-      };
+      roomWhere.unavailabilities = { none: { unavailabilityDate: { gte: checkInDate, lte: checkOutDate } } };
       roomWhere.orders = {
         none: {
-          status: { in: ["MENUNGGU_PEMBAYARAN", "MENUNGGU_KONFIRMASI_PEMBAYARAN", "DIPROSES"] },
-          OR: [
-            {
-              checkInDate: { lte: checkOutDate },
-              checkOutDate: { gte: checkInDate },
-            },
-          ],
+          status: { in: ACTIVE_ORDER_STATUSES },
+          OR: [{ checkInDate: { lte: checkOutDate }, checkOutDate: { gte: checkInDate } }],
         },
       };
     }
 
     whereClause.rooms = { some: roomWhere };
-
     const total = await prisma.property.count({ where: whereClause });
 
     const properties = await prisma.property.findMany({
@@ -111,9 +86,7 @@ class PropertyRepository {
         pictures: true,
         rooms: {
           where: roomWhere,
-          include: {
-            peakSeasonRates: { where: { deletedAt: null } },
-          },
+          include: { peakSeasonRates: { where: { deletedAt: null } } },
         },
       },
       skip: (page - 1) * limit,
