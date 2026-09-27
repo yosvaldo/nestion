@@ -17,7 +17,7 @@ export const uniqueUserGuard = async (req: Request, _: Response, next: NextFunct
   }
 };
 
-export const verifyToken = (type: "access" | "refresh") => {
+export const verifyToken = (type: "access" | "refresh") => { 
   return async (req: Request, _: Response, next: NextFunction) => {
     try {
         const isAccess = type === "access";
@@ -33,6 +33,7 @@ export const verifyToken = (type: "access" | "refresh") => {
         if (!decoded) throw new AppError("Session token invalid atau expired", 401);
 
         req.user = decoded as any;
+        console.log(req.user);
         next();
     } catch (error) {
         next(error);

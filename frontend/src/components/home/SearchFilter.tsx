@@ -1,8 +1,15 @@
 import { useState } from "react";
 import { Search, MapPin, Calendar, Users } from "lucide-react";
 
+export interface SearchData {
+  destination: string;
+  checkInDate?: string;
+  checkOutDate?: string;
+  guestCapacity?: number;
+}
+
 interface SearchFilterFormProps {
-  onSearch?: (filters: { destination: string; checkIn: string; duration: string; guests: string }) => void;
+  onSearch?: (filters: SearchData) => void;
 }
 
 export default function SearchFilterForm({ onSearch }: SearchFilterFormProps) {
@@ -14,7 +21,20 @@ export default function SearchFilterForm({ onSearch }: SearchFilterFormProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (onSearch) {
-      onSearch({ destination, checkIn, duration, guests });
+      let checkOutDate = "";
+      
+      if (checkIn) {
+        const date = new Date(checkIn);
+        date.setDate(date.getDate() + parseInt(duration));
+        checkOutDate = date.toISOString().split('T')[0];
+      }
+
+      onSearch({ 
+        destination, 
+        checkInDate: checkIn || undefined, 
+        checkOutDate: checkOutDate || undefined, 
+        guestCapacity: parseInt(guests) || 1
+      });
     }
   };
 
