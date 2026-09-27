@@ -19,6 +19,7 @@ propertyRoute.patch("/:propertyId/rooms/:roomId", verifyToken("access"), roleGua
 propertyRoute.delete("/:propertyId/rooms/:roomId", verifyToken("access"), roleGuard("TENANT"), verifyRoomOwnership, tenantPropertyController.deleteRoom);
 
 propertyRoute.get("/:id", propertyController.getById);
+propertyRoute.get("/:id/calendar", propertyController.getCalendar);
 propertyRoute.patch("/:id", verifyToken("access"), roleGuard("TENANT"), verifyPropertyOwnership, tenantPropertyController.updateProperty);
 propertyRoute.delete("/:id", verifyToken("access"), roleGuard("TENANT"), verifyPropertyOwnership, tenantPropertyController.deleteProperty);
 
