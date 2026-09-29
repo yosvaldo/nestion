@@ -5,52 +5,39 @@ import SEO from "@/components/seo/seo";
 import RoomList from "@/components/property/RoomList";
 import PricingCalendar from "@/components/property/PricingCalendar";
 import { MapPin } from "lucide-react";
-import type { PropertyDetailResponse, PriceCalendarEntry } from "@/models/property.type";
+import { toast } from "sonner";
+import type { PropertyDetailResponse, PriceCalendarEntry } from "@/models/property.model";
 
 export default function PropertyDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  
+  const navigate = useNavigate();  
   const [property, setProperty] = useState<PropertyDetailResponse | null>(null);
   const [calendarData, setCalendarData] = useState<PriceCalendarEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  
+  const [isBooking, setIsBooking] = useState(false);
   const [selectedRoomId, setSelectedRoomId] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<string>("");
 
   useEffect(() => {
-    let isMounted = true;
-
     const fetchPropertyDetail = async () => {
       setLoading(true);
       try {
-        const propRes = await api.get(`/properties/${id}`);
-        
-        if (isMounted) {
-          setProperty(propRes.data.data);
-          
-          const rooms = propRes.data.data.rooms;
-          if (rooms && rooms.length > 0) {
-            setSelectedRoomId(rooms[0].id);
-          }
+        const propRes = await api.get(`/properties/${id}`);        
+        // if (isMounted) {
+          setProperty(propRes.data.data);          
+          // if (propRes.data.data.rooms?.length) 
+          //   setSelectedRoomId(propRes.data.data.rooms[0].id);
           setLoading(false);
-        }
+        // }
       } catch {
-        if (isMounted) {
-          setLoading(false);
-          navigate("/error");
-        }
-      }
+        // if (isMounted) 
+         setLoading(false); navigate("/error");
     };
-
-    if (id) fetchPropertyDetail();
-    
-    return () => { isMounted = false; };
-  }, [id, navigate]);
+    fetchPropertyDetail();
+  }}, [id]);
 
   useEffect(() => {
     let isMounted = true;
-
     const fetchPricingCalendar = async () => {
       if (!selectedRoomId) return;
       try {
@@ -60,11 +47,24 @@ export default function PropertyDetailPage() {
         if (isMounted) setCalendarData([]);
       }
     };
-
     fetchPricingCalendar();
-    
     return () => { isMounted = false; };
   }, [selectedRoomId]);
+
+  const handleBookNow = async () => {
+    setIsBooking(true);
+    try {
+      const checkIn = new Date(selectedDate);
+      const checkOut = new Date(checkIn.setDate(checkIn.getDate() + 1)).toISOString().split("T")[0];
+      await api.post("/orders", { roomId: selectedRoomId, checkInDate: selectedDate, checkOutDate: checkOut });
+      toast.success("Pesanan dibuat! Selesaikan pembayaran.");
+      navigate("/user/orders");
+      setIsBooking(false);
+    } catch {
+      toast.error("Gagal membuat pesanan. Pastikan tanggal tersedia.");
+      setIsBooking(false);
+    }
+  };
 
   if (loading || !property) {
     return (
@@ -78,7 +78,6 @@ export default function PropertyDetailPage() {
     <>
       <SEO title={`${property.name} | Nestion`} description={property.description} />
       <main className="min-h-screen bg-slate-50 pb-24 font-sans">
-        
         <div className="w-full h-64 md:h-96 bg-slate-200 relative">
           <img 
             src={property.pictureUrls[0] || "https://placehold.co/1200x600?text=No+Image"} 
@@ -86,7 +85,6 @@ export default function PropertyDetailPage() {
             className="w-full h-full object-cover"
           />
         </div>
-
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-10">
           <div className="bg-white rounded-3xl p-6 md:p-10 shadow-lg border border-slate-100 mb-8">
             <span className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide">
@@ -103,7 +101,6 @@ export default function PropertyDetailPage() {
               {property.description}
             </p>
           </div>
-
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-8">
               <RoomList 
@@ -112,7 +109,6 @@ export default function PropertyDetailPage() {
                 onSelectRoom={setSelectedRoomId}
               />
             </div>
-
             <div className="lg:col-span-1">
               <div className="sticky top-6 space-y-6">
                 <PricingCalendar 
@@ -120,15 +116,18 @@ export default function PropertyDetailPage() {
                   selectedDate={selectedDate}
                   onSelectDate={setSelectedDate}
                 />
-                
                 <div className="bg-slate-900 rounded-2xl p-6 text-white shadow-xl">
                   <h4 className="font-bold mb-4">Reservation Summary</h4>
                   {selectedRoomId && selectedDate ? (
-                    <button className="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 rounded-xl transition-colors">
-                      Book Now
+                    <button
+                      onClick={handleBookNow}
+                      disabled={isBooking}
+                      className="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 rounded-xl transition-colors disabled:opacity-50"
+                    >
+                      {isBooking ? "Memproses..." : "Book Now"}
                     </button>
                   ) : (
-                    <p className="text-sm text-slate-400">Please select a room and date to continue booking.</p>
+                    <p className="text-sm text-slate-400">Silahkan pilih kamar dan tanggal untuk memesan.</p>
                   )}
                 </div>
               </div>

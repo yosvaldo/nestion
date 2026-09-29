@@ -5,6 +5,7 @@ import RegisterPage from "@/pages/auth/register.page";
 import TenantRegisterPage from "@/pages/tenant/register.page";
 import VerifyEmailPage from "@/pages/auth/verify-email.page";
 import ResetPasswordPage from "@/pages/auth/reset-password.page";
+import PropertyDetailPage from "@/pages/property/detail.page";
 
 const publicRoutes: IRoute[] = [
   { index: true, element: <HomePage /> },
@@ -13,6 +14,7 @@ const publicRoutes: IRoute[] = [
   { path: "tenant/register", element: <TenantRegisterPage /> },
   { path: "verify-email", element: <VerifyEmailPage /> },
   { path: "reset-password", element: <ResetPasswordPage />},
+  { path: "properties/:id", element: <PropertyDetailPage /> },
 ];
 
 export default publicRoutes;

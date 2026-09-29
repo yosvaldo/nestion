@@ -69,7 +69,7 @@ export default function TenantDashboardPage() {
   return (
     <>
       <SEO title="Tenant Dashboard | Nestion" description="Manage properties." />
-      <main className="min-h-screen bg-slate-50 p-6 md:p-10 font-sans">
+      <main className="p-6 md:p-10 font-sans">
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-center mb-8 gap-4">
             <h1 className="text-2xl font-bold text-slate-900">Property Management</h1>

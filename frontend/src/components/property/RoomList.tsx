@@ -1,5 +1,5 @@
 import { Users, Info } from "lucide-react";
-import type { RoomResponse } from "@/models/property.type";
+import type { RoomResponse } from "@/models/property.model";
 
 interface RoomListProps {
   rooms: RoomResponse[];

@@ -20,7 +20,7 @@ export interface RoomResponse {
 }
 
 export interface PriceCalendarEntry {
-  date: string; // Format: YYYY-MM-DD
+  date: string; 
   price: number;
   isPeakSeason: boolean;
 }

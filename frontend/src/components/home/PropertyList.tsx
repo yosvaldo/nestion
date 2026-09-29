@@ -1,6 +1,7 @@
 import { Star, ArrowUpDown, ChevronLeft, ChevronRight, Search } from "lucide-react";
-import type { PropertyFilterParams } from "../../models/property.type";
+import type { PropertyFilterParams } from "../../models/property.model";
 import type { PropertyResponse } from "../../pages/home/home.page";
+import { Link } from "react-router-dom";
 
 interface PropertyListProps {
   properties: PropertyResponse[];
@@ -61,7 +62,7 @@ export default function PropertyList({ properties, loading, filters, totalPages,
               <div key={item.id} className="group bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all cursor-pointer">
                 <div className="aspect-4/3 relative overflow-hidden bg-slate-100">
                   <img
-                    src={item.pictureUrls[0] || "https://placehold.co/600x400?text=No+Image"}
+                    src={item.pictures[0] || "https://placehold.co/600x400?text=No+Image"}
                     alt={item.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
@@ -79,9 +80,11 @@ export default function PropertyList({ properties, loading, filters, totalPages,
                     </div>
                   </div>
 
+                  <Link to={`/properties/${item.id}`}>
                   <h4 className="font-bold text-slate-900 text-base mb-3 line-clamp-1 group-hover:text-amber-600 transition-colors">
                     {item.name}
                   </h4>
+                  </Link>
 
                   <div className="border-t border-slate-100 pt-3 flex items-baseline justify-between">
                     <span className="text-xs text-slate-500">Mulai dari</span>

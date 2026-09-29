@@ -4,4 +4,5 @@ export default interface IRoute {
   path?: string;
   index?: boolean;
   element: ReactNode;
+  children?: IRoute[];
 }
