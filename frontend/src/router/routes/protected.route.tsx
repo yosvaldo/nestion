@@ -4,6 +4,7 @@ import ProfilePage from "@/pages/user/profile.page";
 import UserOrdersPage from "@/pages/user/order.page";
 import TenantDashboardPage from "@/pages/tenant/dashboard.page";
 import TenantLayout from "@/components/layout/tenant.layout";
+import TenantOrdersPage from "@/pages/tenant/order.page";
 
 export const userProtectedRoutes: IRoute[] = [
   {
@@ -34,6 +35,7 @@ export const tenantProtectedRoutes: IRoute[] = [
     ),
     children: [
       { path: "dashboard", element: <TenantDashboardPage /> },
+      { path: "orders", element: <TenantOrdersPage /> },
     ],
   },
 ];
