@@ -1,5 +1,5 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import type { PriceCalendarEntry } from "@/models/property.type";
+import type { PriceCalendarEntry } from "@/models/property.model";
 
 interface PricingCalendarProps {
   priceData: PriceCalendarEntry[];

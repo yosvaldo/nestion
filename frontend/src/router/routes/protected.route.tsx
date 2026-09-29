@@ -3,6 +3,7 @@ import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ProfilePage from "@/pages/user/profile.page";
 import UserOrdersPage from "@/pages/user/order.page";
 import TenantDashboardPage from "@/pages/tenant/dashboard.page";
+import TenantLayout from "@/components/layout/tenant.layout";
 
 export const userProtectedRoutes: IRoute[] = [
   {
@@ -25,11 +26,14 @@ export const userProtectedRoutes: IRoute[] = [
 
 export const tenantProtectedRoutes: IRoute[] = [
   {
-    path: "tenant/dashboard",
+    path: "tenant",
     element: (
       <ProtectedRoute allowedRole="TENANT" requireVerified>
-        <TenantDashboardPage />
+        <TenantLayout />
       </ProtectedRoute>
     ),
+    children: [
+      { path: "dashboard", element: <TenantDashboardPage /> },
+    ],
   },
 ];

@@ -4,7 +4,7 @@ import api from "@/configs/api.config";
 import SEO from "@/components/seo/seo";
 import { toast } from "sonner";
 import { Save, AlertTriangle, ArrowLeft } from "lucide-react";
-import type { PriceType } from "@/models/room-management.type";
+import type { PriceType } from "@/models/room-management.model";
 
 interface Holiday {
   tanggal: string;

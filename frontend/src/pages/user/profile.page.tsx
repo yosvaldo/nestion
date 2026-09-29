@@ -16,13 +16,12 @@ export default function ProfilePage() {
       try {
         const response = await api.get("/auth/me");
         setUser(response.data.data as User);
+        setLoading(false);
       } catch {
         toast.error("Gagal memuat data profil.");
-      } finally {
         setLoading(false);
       }
     };
-
     fetchProfile();
   }, [setUser]);
 

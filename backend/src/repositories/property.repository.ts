@@ -115,7 +115,7 @@ class PropertyRepository {
       include: {
         category: true,
         pictures: true,
-        rooms: { where: roomWhere, orderBy: { basePrice: "asc" } },
+        rooms: { where: roomWhere, orderBy: { basePrice: "asc" }, include: {peakSeasonRates: true} },
       },
     });
     const map = new Map(raw.map((p) => [p.id, p]));
@@ -139,7 +139,7 @@ class PropertyRepository {
       include: {
         category: true,
         pictures: true,
-        rooms: { where: roomWhere, orderBy: { basePrice: "asc" } },
+        rooms: { where: roomWhere, orderBy: { basePrice: "asc" }, include: { peakSeasonRates: true } },
       },
     });
     return { properties: raw, total };

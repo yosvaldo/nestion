@@ -4,7 +4,7 @@ import SEO from "@/components/seo/seo";
 import HeroCarousel from "@/components/home/Hero";
 import SearchFilterForm from "@/components/home/SearchFilter";
 import PropertyList from "@/components/home/PropertyList";
-import type { PropertyFilterParams } from "@/models/property.type";
+import type { PropertyFilterParams } from "@/models/property.model";
 
 export interface PropertyResponse {
   id: string;
@@ -23,41 +23,41 @@ export default function HomePage() {
   
   const [filters, setFilters] = useState<PropertyFilterParams>({
     page: 1,
-    limit: 8,
+    limit: 10,
     sortBy: "price",
     sortOrder: "asc",
   });
 
   useEffect(() => {
-    let isMounted = true;
+    // let isMounted = true;
 
     const fetchProperties = async () => {
       setLoading(true);
       
-      const params = Object.fromEntries(
-        Object.entries(filters).filter((entry) => entry[1] !== "" && entry[1] !== undefined)
-      );
+      // const params = Object.fromEntries(
+      //   Object.entries(filters).filter((entry) => entry[1] !== "" && entry[1] !== undefined)
+      // );
       
       try {
-        const response = await api.get("/properties", { params });
+        const response = await api.get("/properties");
+        console.log(properties);
         
-        if (isMounted) {
-          setProperties(response.data.data.data);
-          setTotalPages(response.data.data.meta.totalPages);
+        // if (isMounted) {
+          setProperties(response.data.data);
+          setTotalPages(response.data.meta.totalPages);
           setLoading(false);
-        }
-      } catch {
-        if (isMounted) {
-          setLoading(false);
-        }
+        // }
+      } catch(error) {
+        // if (isMounted) {
+          console.error(error);
+        // }
+      } finally {
+        setLoading(false);
       }
-    };
+      };
 
     fetchProperties();
 
-    return () => {
-      isMounted = false;
-    };
   }, [filters]);
 
   const handleHeroSearch = (searchData: { destination: string; checkInDate?: string; checkOutDate?: string; guestCapacity?: number }) => {
