@@ -77,7 +77,7 @@ export default function UserMenu(){
             <>
               <DropdownMenuItem asChild>
                 <Link
-                  to="/tenant/dashboard"
+                  to="/tenant"
                   className="w-full flex items-center px-3 py-2 text-sm font-medium text-slate-700 rounded-xl hover:bg-slate-100 hover:text-amber-600 focus:bg-slate-100 focus:text-amber-600 cursor-pointer"
                 >
                   Tenant Dashboard

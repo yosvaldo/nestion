@@ -25,34 +25,27 @@ export default function TenantDashboardPage() {
   const [propertyToDelete, setPropertyToDelete] = useState<string | null>(null);
 
   useEffect(() => {
-    let isMounted = true;
     const fetchProperties = async () => {
       setLoading(true);
       try {
-        const res = await api.get("/tenant/properties", {
+        const res = await api.get("/properties/my-properties", {
           params: { page, limit: 10, search, sortBy, sortOrder },
         });
-        if (isMounted) {
-          setProperties(res.data.data.data);
-          setTotalPages(res.data.data.meta.totalPages);
-          setLoading(false);
-        }
+        setProperties(res.data.data);
+        setTotalPages(res.data.meta.totalPages);
       } catch {
-        if (isMounted) {
-          toast.error("Failed to load properties.");
-          setLoading(false);
-        }
+        toast.error("Failed to load properties.");
+      } finally {
+        setLoading(false);
       }
     };
-
     fetchProperties();
-    return () => { isMounted = false; };
   }, [page, search, sortBy, sortOrder]);
 
   const handleDelete = async () => {
     if (!propertyToDelete) return;
     try {
-      await api.delete(`/tenant/properties/${propertyToDelete}`);
+      await api.delete(`/properties/${propertyToDelete}`);
       toast.success("Property deleted.");
       setProperties((prev) => prev.filter((p) => p.id !== propertyToDelete));
       setPropertyToDelete(null);

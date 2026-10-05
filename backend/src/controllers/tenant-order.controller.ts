@@ -18,8 +18,8 @@ class TenantOrderController {
   confirmPayment = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const tenantId = req.user!.id;
-      const { action } = req.body; // "ACCEPT" | "REJECT"
-      const updated = await tenantOrderService.confirmPayment(tenantId, req.params.id, action);
+      const { action } = req.body;
+      const updated = await tenantOrderService.confirmPayment(tenantId, req.params.id as string, action);
       return res.send(responseBuilder(200, `Payment ${action.toLowerCase()}ed`, updated));
     } catch (e) { next(e); }
   };
@@ -27,7 +27,7 @@ class TenantOrderController {
   cancelOrder = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const tenantId = req.user!.id;
-      const canceled = await tenantOrderService.cancelOrder(tenantId, req.params.id);
+      const canceled = await tenantOrderService.cancelOrder(tenantId, req.params.id as string);
       return res.send(responseBuilder(200, "Order canceled successfully", canceled));
     } catch (e) { next(e); }
   };

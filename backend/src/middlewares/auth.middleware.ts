@@ -33,7 +33,6 @@ export const verifyToken = (type: "access" | "refresh") => {
         if (!decoded) throw new AppError("Session token invalid atau expired", 401);
 
         req.user = decoded as any;
-        console.log(req.user);
         next();
     } catch (error) {
         next(error);

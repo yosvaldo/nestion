@@ -24,22 +24,19 @@ export default function TenantOrdersPage() {
   const [cancelId, setCancelId] = useState<string | null>(null);
 
   useEffect(() => {
-    let isMounted = true;
     const fetchOrders = async () => {
       setLoading(true);
       try {
         const res = await api.get("/tenant-orders", { params: { status: status || undefined, page, limit: 10 } });
-        if (isMounted) {
-          setOrders(res.data.data);
-          setTotalPages(res.data.meta?.totalPages || 1);
-          setLoading(false);
-        }
+        setOrders(res.data.data);
+        setTotalPages(res.data.meta?.totalPages || 1);
       } catch {
-        if (isMounted) { toast.error("Failed to load orders"); setLoading(false); }
+        toast.error("Failed to load orders");
+      } finally {
+        setLoading(false);
       }
     };
     fetchOrders();
-    return () => { isMounted = false; };
   }, [status, page, refresh]);
 
   const handleConfirm = async (id: string, action: "ACCEPT" | "REJECT") => {
@@ -66,7 +63,7 @@ export default function TenantOrdersPage() {
 
   return (
     <>
-      <SEO title="Manage Orders | Nestion" description="Tenant order management" />
+      <SEO title="Mengatur Pesanan | Nestion" description="Tenant order management" />
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <h1 className="text-2xl font-bold text-slate-900">Transaction Management</h1>

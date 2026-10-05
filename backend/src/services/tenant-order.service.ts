@@ -1,11 +1,24 @@
 import repo from "../repositories/tenant-order.repository.js";
 import AppError from "../errors/app.error.js";
 import { OrderStatus } from "../generated/prisma/client.js";
+import EmailService from "./email.service.js";
+import renderTemplate from "../libs/handlebars.js";
 
 class TenantOrderService {
   async getOrders(tenantId: string, status?: OrderStatus, page = 1, limit = 10) {
     const { orders, total } = await repo.findMany(tenantId, status, page, limit);
     return { orders, meta: { page, limit, totalPages: Math.ceil(total / limit), totalItems: total } };
+  }
+
+  private async notifyUser(order: any) {
+    const html = renderTemplate("transaction-success.hbs", {
+      fullName: order.user.fullName,
+      orderNumber: order.orderNumber,
+      propertyName: order.room.property.name,
+      roomName: order.room.name,
+      checkInDate: new Date(order.checkInDate).toLocaleDateString("id-ID")
+    });
+    await EmailService.sendEmail(order.user.email, "Pembayaran Anda Diterima", html);
   }
 
   async confirmPayment(tenantId: string, orderId: string, action: "ACCEPT" | "REJECT") {
@@ -15,7 +28,7 @@ class TenantOrderService {
 
     const newStatus = action === "ACCEPT" ? OrderStatus.DIPROSES : OrderStatus.MENUNGGU_PEMBAYARAN;
     const updated = await repo.updateStatus(orderId, newStatus);
-    
+    if (action === "ACCEPT") await this.notifyUser(order);
     return updated;
   }
 

@@ -13,7 +13,7 @@ interface SearchFilterFormProps {
 }
 
 export default function SearchFilterForm({ onSearch }: SearchFilterFormProps) {
-  const [destination, setDestination] = useState("Bali");
+  const [destination, setDestination] = useState("");
   const [checkIn, setCheckIn] = useState("");
   const [duration, setDuration] = useState("1");
   const [guests, setGuests] = useState("1");
@@ -23,7 +23,7 @@ export default function SearchFilterForm({ onSearch }: SearchFilterFormProps) {
     if (onSearch) {
       let checkOutDate = "";
       
-      if (checkIn) {
+      if (checkIn && duration) {
         const date = new Date(checkIn);
         date.setDate(date.getDate() + parseInt(duration));
         checkOutDate = date.toISOString().split('T')[0];
@@ -48,17 +48,13 @@ export default function SearchFilterForm({ onSearch }: SearchFilterFormProps) {
           <MapPin className="w-3.5 h-3.5 text-amber-600" />
           Destinasi
         </label>
-        <select
+        <input
+          type="text"
+          placeholder="Ketik kota tujuan (Contoh: Surabaya)"
           value={destination}
           onChange={(e) => setDestination(e.target.value)}
           className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500"
-        >
-          <option value="Bali">Bali</option>
-          <option value="Bandung">Bandung</option>
-          <option value="Yogyakarta">Yogyakarta</option>
-          <option value="Jakarta">Jakarta</option>
-          <option value="Surabaya">Surabaya</option>
-        </select>
+        />
       </div>
 
       <div>
@@ -73,16 +69,17 @@ export default function SearchFilterForm({ onSearch }: SearchFilterFormProps) {
             onChange={(e) => setCheckIn(e.target.value)}
             className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500"
           />
-          <select
-            value={duration}
-            onChange={(e) => setDuration(e.target.value)}
-            className="w-28 bg-slate-50 border border-slate-200 rounded-xl px-2 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500"
-          >
-            <option value="1">1 Malam</option>
-            <option value="2">2 Malam</option>
-            <option value="3">3 Malam</option>
-            <option value="7">1 Minggu</option>
-          </select>
+          <div className="relative w-28">
+            <input
+              type="number"
+              min="1"
+              placeholder="Malam"
+              value={duration}
+              onChange={(e) => setDuration(e.target.value)}
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-2 pr-8 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500"
+            />
+            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-400 pointer-events-none">Malam</span>
+          </div>
         </div>
       </div>
 

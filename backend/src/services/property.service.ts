@@ -84,7 +84,6 @@ class PropertyService {
     const formatted = properties.map((prop) => {
       let lowestPrice = Infinity;
       prop.rooms.forEach((room) => {
-        console.log(room);
         const price = calculateDailyPrice(checkDate, room.basePrice, room.peakSeasonRates);
         if (price < lowestPrice) lowestPrice = price;
     });

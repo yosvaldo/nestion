@@ -62,7 +62,7 @@ export default function PropertyList({ properties, loading, filters, totalPages,
               <div key={item.id} className="group bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all cursor-pointer">
                 <div className="aspect-4/3 relative overflow-hidden bg-slate-100">
                   <img
-                    src={item.pictures[0] || "https://placehold.co/600x400?text=No+Image"}
+                    src={item.pictureUrls?.[0] || "https://placehold.co/600x400?text=No+Image"}
                     alt={item.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />

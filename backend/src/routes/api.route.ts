@@ -6,6 +6,7 @@ import categoryRoute from "./category.route.js";
 import roomManagementRoute from "./room-management.route.js";
 import orderRoute from "./order.route.js";
 import tenantOrderRoute from "./tenant-order.route.js";
+import reportRoute from "./report.route.js";
 
 const apiRouter: Router = express.Router();
 
@@ -18,5 +19,6 @@ apiRouter.use("/categories", categoryRoute);
 apiRouter.use("/room-management", roomManagementRoute);
 apiRouter.use("/orders", orderRoute);
 apiRouter.use("/tenant-orders", tenantOrderRoute);
+apiRouter.use("/report", reportRoute);
 
 export default apiRouter;

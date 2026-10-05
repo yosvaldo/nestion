@@ -9,7 +9,6 @@ import { api } from "@/configs/api.config";
 import type { User } from "@/stores/authStore";
 import SubmitButton from "../buttons/submit-button";
 
-
 type ProfileValues = z.infer<typeof updateProfileSchema>;
 
 interface ProfileInfoCardProps {
@@ -57,13 +56,18 @@ export default function ProfileInfoCard({ user, onUpdated }: ProfileInfoCardProp
       if (data.fullName) formData.append("fullName", data.fullName);
       if (avatarFile) formData.append("avatar", avatarFile);
 
-      const response = await api.patch("/auth/profile", formData);
+      const response = await api.patch("/auth/profile", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
       onUpdated(response.data.data as User);
       setAvatarFile(null);
       setPreviewUrl(null);
       toast.success("Profil berhasil diperbarui.");
     } catch {
-      toast.error("Gagal memperbarui profil.");
+      toast.error(error.response?.data?.message || "Gagal memperbarui profil.");
     }
   };
 

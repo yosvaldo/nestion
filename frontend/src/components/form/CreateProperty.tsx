@@ -33,24 +33,32 @@ import {
 const formSchema = z.object({
   title: z
     .string()
-    .min(5, "Bug title must be at least 5 characters.")
-    .max(32, "Bug title must be at most 32 characters."),
+    .min(5, "Title must be at least 5 characters.")
+    .max(250, "Title must be at most 250 characters."),
+  city: z
+   .string()
+   .max(50, "City must be at most 50 characters."),
+  category: z
+    .string(),
   description: z
     .string()
     .min(20, "Description must be at least 20 characters.")
-    .max(100, "Description must be at most 100 characters."),
+    .max(500, "Description must be at most 500 characters."),
 })
 
-export function BugReportForm() {
+export default function CreateProperty(){
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
+      city: "",
+      category: "",
       description: "",
     },
   })
 
   function onSubmit(data: z.infer<typeof formSchema>) {
+    console.log(data);
     toast("You submitted the following values:", {
       description: (
         <pre className="mt-2 w-[320px] overflow-x-auto rounded-md bg-code p-4 text-code-foreground">
@@ -75,20 +83,20 @@ export function BugReportForm() {
           Mohon isi data mengenai Properti Baru Anda
         </CardDescription>
       </CardHeader>
+      <form onSubmit={form.handleSubmit(onSubmit)}>
       <CardContent>
-        <form id="form-rhf-demo" onSubmit={form.handleSubmit(onSubmit)}>
           <FieldGroup>
             <Controller
               name="title"
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-rhf-demo-title">
+                  <FieldLabel htmlFor="title">
                     Nama Properti
                   </FieldLabel>
                   <Input
                     {...field}
-                    id="form-rhf-demo-title"
+                    id="title"
                     aria-invalid={fieldState.invalid}
                     placeholder="Misalnya: Villa Bagus"
                     autoComplete="off"
@@ -100,16 +108,16 @@ export function BugReportForm() {
               )}
             />
             <Controller
-              name="title"
+              name="city"
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-rhf-demo-title">
+                  <FieldLabel htmlFor="city">
                     Kota Properti
                   </FieldLabel>
                   <Input
                     {...field}
-                    id="form-rhf-demo-title"
+                    id="city"
                     aria-invalid={fieldState.invalid}
                     placeholder="Misalnya: Surabaya"
                     autoComplete="off"
@@ -121,16 +129,16 @@ export function BugReportForm() {
               )}
             />
             <Controller
-              name="title"
+              name="category"
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-rhf-demo-title">
+                  <FieldLabel htmlFor="category">
                     Kategori Properti
                   </FieldLabel>
                   <Input
                     {...field}
-                    id="form-rhf-demo-title"
+                    id="category"
                     aria-invalid={fieldState.invalid}
                     placeholder=""
                     autoComplete="off"
@@ -146,13 +154,13 @@ export function BugReportForm() {
               control={form.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor="form-rhf-demo-description">
+                  <FieldLabel htmlFor="description">
                     Description
                   </FieldLabel>
                   <InputGroup>
                     <InputGroupTextarea
                       {...field}
-                      id="form-rhf-demo-description"
+                      id="description"
                       placeholder="I'm having an issue with the login button on mobile."
                       rows={6}
                       className="min-h-24 resize-none"
@@ -160,7 +168,7 @@ export function BugReportForm() {
                     />
                     <InputGroupAddon align="block-end">
                       <InputGroupText className="tabular-nums">
-                        {field.value.length}/100 characters
+                        {field.value.length}/500 characters
                       </InputGroupText>
                     </InputGroupAddon>
                   </InputGroup>
@@ -175,18 +183,18 @@ export function BugReportForm() {
               )}
             />
           </FieldGroup>
-        </form>
       </CardContent>
       <CardFooter>
         <Field orientation="horizontal">
           <Button type="button" variant="outline" onClick={() => form.reset()}>
             Reset
           </Button>
-          <Button type="submit" form="form-rhf-demo">
+          <Button type="submit">
             Submit
           </Button>
         </Field>
       </CardFooter>
+        </form>
     </Card>
   )
 }

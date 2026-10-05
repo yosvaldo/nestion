@@ -29,35 +29,20 @@ export default function HomePage() {
   });
 
   useEffect(() => {
-    // let isMounted = true;
-
     const fetchProperties = async () => {
       setLoading(true);
-      
-      // const params = Object.fromEntries(
-      //   Object.entries(filters).filter((entry) => entry[1] !== "" && entry[1] !== undefined)
-      // );
-      
       try {
-        const response = await api.get("/properties");
-        console.log(properties);
-        
-        // if (isMounted) {
-          setProperties(response.data.data);
-          setTotalPages(response.data.meta.totalPages);
-          setLoading(false);
-        // }
+        const response = await api.get("/properties", { params: filters });
+        setProperties(response.data.data);
+        setTotalPages(response.data.meta.totalPages);
+        setLoading(false);
       } catch(error) {
-        // if (isMounted) {
-          console.error(error);
-        // }
+        console.error(error);
       } finally {
         setLoading(false);
       }
-      };
-
+    };
     fetchProperties();
-
   }, [filters]);
 
   const handleHeroSearch = (searchData: { destination: string; checkInDate?: string; checkOutDate?: string; guestCapacity?: number }) => {

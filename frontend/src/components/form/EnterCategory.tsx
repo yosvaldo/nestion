@@ -1,3 +1,5 @@
+import { useState, useEffect } from "react";
+import api from "@/configs/api.config";
 import {
   Select,
   SelectContent,
@@ -6,46 +8,51 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { useState, useEffect } from "react";
+} from "@/components/ui/select";
 
-export function SelectDemo() {
-  const [categories, setCategories] = useState<[]>([]);
+interface Category {
+  id: string;
+  name: string;
+}
+
+interface EnterCategoryProps {
+  value?: string;
+  onChange: (value: string) => void;
+}
+
+export default function EnterCategory({ value, onChange }: EnterCategoryProps) {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-      let isMounted = true;
-      const fetchCategory = async () => {
-        setLoading(true);
-        try {
-          const catRes = await api.get(`/properties/${id}`);        
-          if (isMounted) {
-            setCategories(catRes.data.data);          
-            if (catRes.data.data.categories?.length) setSelectedCategoryId(catRes.data.data.rooms[0].id);
-            setLoading(false);
-          }
-        } catch {
-          if (isMounted) { setLoading(false); navigate("/error"); }
-        }
-      };
-      return () => { isMounted = false; };
-    }, []);
-
+    const fetchCategory = async () => {
+      try {
+        const catRes = await api.get("/category");
+        setCategories(catRes.data.data);
+      } catch (error) {
+        console.error("Gagal memuat kategori:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchCategory();
+  }, []);
 
   return (
-    <Select categoryId={categoryId}>
-      <SelectTrigger className="w-full max-w-48">
-        <SelectValue />
+    <Select value={value} onValueChange={onChange} disabled={loading}>
+      <SelectTrigger className="w-full">
+        <SelectValue placeholder={loading ? "Memuat..." : "Pilih Kategori"} />
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
-          <SelectLabel>Kategori</SelectLabel>
-          {categoryId.map((categoryId) => (
-            <SelectItem key={categoryId.value} value={category.value}>
-              {category.label}
+          <SelectLabel>Kategori Properti</SelectLabel>
+          {categories.map((cat) => (
+            <SelectItem key={cat.id} value={cat.id}>
+              {cat.name}
             </SelectItem>
           ))}
         </SelectGroup>
       </SelectContent>
     </Select>
-  )
+  );
 }

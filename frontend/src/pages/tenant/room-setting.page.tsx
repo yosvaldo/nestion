@@ -23,25 +23,19 @@ export default function RoomSettingsPage() {
   const [pForm, setPForm] = useState({ start: "", end: "", type: "PERCENTAGE" as PriceType, val: "" });
 
   useEffect(() => {
-    let isMounted = true;
     const fetchInit = async () => {
       setLoading(true);
       try {
         const d = new Date();
-        const res = await api.get(`/services/holidays?year=${d.getFullYear()}&month=${d.getMonth() + 1}`);
-        if (isMounted) {
-          if (res.data) setHolidays(res.data);
-          setLoading(false);
-        }
+        const res = await api.get(`/room-management/holidays?year=${d.getFullYear()}&month=${d.getMonth() + 1}`);
+        if (res.data) setHolidays(res.data);
       } catch {
-        if (isMounted) {
-          setHolidays([]);
-          setLoading(false);
-        }
+        setHolidays([]);
+      } finally {
+        setLoading(false);
       }
     };
     fetchInit();
-    return () => { isMounted = false; };
   }, []);
 
   const handleUnavail = async (e: React.FormEvent) => {
@@ -49,12 +43,12 @@ export default function RoomSettingsPage() {
     if (!uForm.start || !uForm.end) return toast.error("Dates required.");
     setSaving(true);
     try {
-      await api.post(`/tenant/rooms/${roomId}/unavailability`, { startDate: uForm.start, endDate: uForm.end, reason: uForm.reason });
+      await api.post(`/room-management/${roomId}/unavailability`, { startDate: uForm.start, endDate: uForm.end, reason: uForm.reason });
       toast.success("Room marked unavailable.");
       setUForm({ start: "", end: "", reason: "" });
-      setSaving(false);
     } catch {
       toast.error("Failed to update availability.");
+    } finally {
       setSaving(false);
     }
   };
@@ -64,12 +58,12 @@ export default function RoomSettingsPage() {
     if (!pForm.start || !pForm.end || !pForm.val) return toast.error("All fields required.");
     setSaving(true);
     try {
-      await api.post(`/tenant/rooms/${roomId}/peak-rates`, { startDate: pForm.start, endDate: pForm.end, priceType: pForm.type, value: Number(pForm.val) });
+      await api.post(`/room-management/${roomId}/peak-season`, { startDate: pForm.start, endDate: pForm.end, priceType: pForm.type, value: Number(pForm.val) });
       toast.success("Peak season rate applied.");
       setPForm({ start: "", end: "", type: "PERCENTAGE", val: "" });
-      setSaving(false);
     } catch {
       toast.error("Failed to set peak rate.");
+    } finally {
       setSaving(false);
     }
   };
@@ -84,7 +78,7 @@ export default function RoomSettingsPage() {
 
   return (
     <>
-      <SEO title="Room Settings | Nestion" description="Manage room rates." />
+      <SEO title="Pengaturan Room | Nestion" description="Manage room rates." />
       <main className="min-h-screen bg-slate-50 p-6 md:p-10 font-sans">
         <div className="max-w-4xl mx-auto space-y-8">
           <div className="flex items-center gap-4">

@@ -23,32 +23,27 @@ export default function PropertyDetailPage() {
       setLoading(true);
       try {
         const propRes = await api.get(`/properties/${id}`);        
-        // if (isMounted) {
           setProperty(propRes.data.data);          
-          // if (propRes.data.data.rooms?.length) 
-          //   setSelectedRoomId(propRes.data.data.rooms[0].id);
-          setLoading(false);
-        // }
       } catch {
-        // if (isMounted) 
-         setLoading(false); navigate("/error");
+         navigate("/error");
+      } finally {
+        setLoading(false);
+      }
     };
     fetchPropertyDetail();
-  }}, [id]);
+  }, [id, navigate]);
 
   useEffect(() => {
-    let isMounted = true;
     const fetchPricingCalendar = async () => {
       if (!selectedRoomId) return;
       try {
         const calRes = await api.get(`/properties/calendar/${selectedRoomId}`);
-        if (isMounted) setCalendarData(calRes.data.data);
+        setCalendarData(calRes.data.data);
       } catch {
-        if (isMounted) setCalendarData([]);
+        setCalendarData([]);
       }
     };
     fetchPricingCalendar();
-    return () => { isMounted = false; };
   }, [selectedRoomId]);
 
   const handleBookNow = async () => {
@@ -80,7 +75,7 @@ export default function PropertyDetailPage() {
       <main className="min-h-screen bg-slate-50 pb-24 font-sans">
         <div className="w-full h-64 md:h-96 bg-slate-200 relative">
           <img 
-            src={property.pictureUrls[0] || "https://placehold.co/1200x600?text=No+Image"} 
+            src={property.pictureUrls?.[0] || "https://placehold.co/1200x600?text=No+Image"} 
             alt={property.name}
             className="w-full h-full object-cover"
           />

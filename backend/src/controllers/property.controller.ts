@@ -57,7 +57,6 @@ class PropertyController {
   };
 
   getAll = async (req: Request, res: Response, next: NextFunction) => {
-    console.log("testing");
     try {
       const queryParams = await getPropertiesQuerySchema.parseAsync(req.query);
       const { properties, meta } = await propertyService.getProperties(queryParams);
