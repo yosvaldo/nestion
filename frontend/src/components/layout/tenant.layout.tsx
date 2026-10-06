@@ -22,8 +22,14 @@ export default function TenantLayout() {
         </div>
         <nav className="flex-1 py-6 px-4 space-y-2">
           {navItems.map((item) => {
-            const isActive = location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
-            const Icon = item.icon;
+            const isActive = 
+              item.path === "/tenant"
+              ? location.pathname === "/tenant" ||
+              location.pathname.startsWith("/tenant/properties") ||
+              location.pathname.startsWith("/tenant/rooms")
+              : location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
+            
+              const Icon = item.icon;
             return (
               <Link
                 key={item.name}

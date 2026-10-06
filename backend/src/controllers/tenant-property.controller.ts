@@ -2,12 +2,8 @@ import type { NextFunction, Request, Response } from "express";
 import AppError from "../errors/app.error.js";
 import tenantPropertyService from "../services/tenant-property.service.js";
 import { responseBuilder } from "../utils/response-builder.util.js";
-import {
-  createPropertySchema,
-  createRoomSchema,
-  updatePropertySchema,
-  updateRoomSchema,
-} from "../validators/property.validator.js";
+import { createPropertySchema, createRoomSchema, updatePropertySchema, updateRoomSchema } from "../validators/property.validator.js";
+import { uploadToCloudinary } from "../utils/cloudinary.util.js";
 
 class TenantPropertyController {
   private getTenantId(req: Request): string {
@@ -32,7 +28,12 @@ class TenantPropertyController {
     try {
       const tenantId = this.getTenantId(req);
       const body = await createPropertySchema.parseAsync(req.body);
-      const property = await tenantPropertyService.createProperty(tenantId, body);
+      let pictureUrl;
+      if (req.file) {
+        pictureUrl = await uploadToCloudinary(req.file, "properties");
+      }
+      const payload = { ...body, pictureUrl };
+      const property = await tenantPropertyService.createProperty(tenantId, payload);
       return res
         .status(201)
         .send(responseBuilder(201, "Property created successfully.", property));
@@ -46,7 +47,12 @@ class TenantPropertyController {
       const tenantId = this.getTenantId(req);
       const id = req.params.id as string;
       const body = await updatePropertySchema.parseAsync(req.body);
-      const property = await tenantPropertyService.updateProperty(id, tenantId, body);
+      let pictureUrl;
+      if (req.file) {
+        pictureUrl = await uploadToCloudinary(req.file, "properties");
+      }
+      const payload = { ...body, pictureUrl };
+      const property = await tenantPropertyService.updateProperty(id, tenantId, payload);
       return res.send(
         responseBuilder(200, "Property updated successfully.", property)
       );

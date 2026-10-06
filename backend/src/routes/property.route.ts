@@ -3,11 +3,12 @@ import propertyController from "../controllers/property.controller.js";
 import tenantPropertyController from "../controllers/tenant-property.controller.js";
 import { roleGuard, verifyToken } from "../middlewares/auth.middleware.js";
 import { verifyPropertyOwnership, verifyRoomOwnership } from "../middlewares/tenant-ownership.middleware.js";
+import { propertyImageUploader } from "../middlewares/upload.middleware.js";
 
 const propertyRoute = Router();
 
 propertyRoute.get("/", propertyController.getAll);
-propertyRoute.post("/", verifyToken("access"), roleGuard("TENANT"), tenantPropertyController.createProperty);
+propertyRoute.post("/", verifyToken("access"), roleGuard("TENANT"), propertyImageUploader().single("picture"), tenantPropertyController.createProperty);
 
 propertyRoute.get("/cities", propertyController.getCities);
 propertyRoute.get("/featured", propertyController.getFeatured);
@@ -20,7 +21,7 @@ propertyRoute.delete("/:propertyId/rooms/:roomId", verifyToken("access"), roleGu
 
 propertyRoute.get("/:id", propertyController.getById);
 propertyRoute.get("/:id/calendar", propertyController.getCalendar);
-propertyRoute.patch("/:id", verifyToken("access"), roleGuard("TENANT"), verifyPropertyOwnership, tenantPropertyController.updateProperty);
+propertyRoute.patch("/:id", verifyToken("access"), roleGuard("TENANT"), verifyPropertyOwnership, propertyImageUploader().single("picture"), tenantPropertyController.updateProperty);
 propertyRoute.delete("/:id", verifyToken("access"), roleGuard("TENANT"), verifyPropertyOwnership, tenantPropertyController.deleteProperty);
 
 export default propertyRoute;

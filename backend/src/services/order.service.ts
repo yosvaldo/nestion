@@ -25,7 +25,7 @@ class OrderService {
 
   private async persistOrder(userId: string, roomId: string, checkIn: Date, checkOut: Date, totalPrice: number) {
     const orderNumber = `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-    const paymentExpiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour limit as per PRD
+    const paymentExpiresAt = new Date(Date.now() + 60 * 60 * 1000);
     return orderRepository.create({
       orderNumber, userId, roomId, checkInDate: checkIn, checkOutDate: checkOut,
       totalPrice, status: OrderStatus.MENUNGGU_PEMBAYARAN, paymentExpiresAt,

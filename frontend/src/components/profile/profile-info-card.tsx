@@ -8,6 +8,7 @@ import type { z } from "zod";
 import { api } from "@/configs/api.config";
 import type { User } from "@/stores/authStore";
 import SubmitButton from "../buttons/submit-button";
+import { isAxiosError } from "axios";
 
 type ProfileValues = z.infer<typeof updateProfileSchema>;
 
@@ -66,8 +67,12 @@ export default function ProfileInfoCard({ user, onUpdated }: ProfileInfoCardProp
       setAvatarFile(null);
       setPreviewUrl(null);
       toast.success("Profil berhasil diperbarui.");
-    } catch {
-      toast.error(error.response?.data?.message || "Gagal memperbarui profil.");
+    } catch (error) {
+      if (isAxiosError(error)) {
+        toast.error(error.response?.data?.message || "Gagal memperbarui profil.");
+      } else {
+        toast.error("Gagal memperbarui profil.");
+      }
     }
   };
 

@@ -67,7 +67,7 @@ export default function TenantOrdersPage() {
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <h1 className="text-2xl font-bold text-slate-900">Transaction Management</h1>
-          <select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className="border rounded-xl px-4 py-2 text-sm bg-white min-w-[200px]">
+          <select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className="border rounded-xl px-4 py-2 text-sm bg-white min-w-50">
             <option value="">Semua Status</option>
             <option value="MENUNGGU_PEMBAYARAN">Menunggu Pembayaran</option>
             <option value="MENUNGGU_KONFIRMASI_PEMBAYARAN">Menunggu Konfirmasi</option>
