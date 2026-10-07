@@ -28,11 +28,12 @@ class TenantPropertyController {
     try {
       const tenantId = this.getTenantId(req);
       const body = await createPropertySchema.parseAsync(req.body);
-      let pictureUrl;
+      let pictureUrls: string[] = [];
       if (req.file) {
-        pictureUrl = await uploadToCloudinary(req.file, "properties");
+        const uploadedUrl = await uploadToCloudinary(req.file, "properties");
+        pictureUrls.push(uploadedUrl);
       }
-      const payload = { ...body, pictureUrl };
+      const payload = { ...body, pictureUrls };
       const property = await tenantPropertyService.createProperty(tenantId, payload);
       return res
         .status(201)
@@ -47,11 +48,14 @@ class TenantPropertyController {
       const tenantId = this.getTenantId(req);
       const id = req.params.id as string;
       const body = await updatePropertySchema.parseAsync(req.body);
-      let pictureUrl;
+      let pictureUrls: string[] = [];
       if (req.file) {
-        pictureUrl = await uploadToCloudinary(req.file, "properties");
+        const uploadedUrl = await uploadToCloudinary(req.file, "properties");
+        pictureUrls.push(uploadedUrl);
       }
-      const payload = { ...body, pictureUrl };
+      const payload = pictureUrls.length > 0
+        ? { ...body, pictureUrls }
+        : { ...body };
       const property = await tenantPropertyService.updateProperty(id, tenantId, payload);
       return res.send(
         responseBuilder(200, "Property updated successfully.", property)

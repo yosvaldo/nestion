@@ -38,7 +38,8 @@ class TenantPropertyRepository {
     tenantId: string,
     data: CreatePropertyInput
   ): Promise<Property> {
-    const { pictureUrls, ...propertyData } = data;
+    const { pictureUrls, rooms, ...propertyData } = data;
+
     return prisma.property.create({
       data: {
         ...propertyData,
@@ -52,6 +53,14 @@ class TenantPropertyRepository {
               },
             }
           : {}),
+        rooms: {
+          create: rooms.map((room) => ({
+            name: room.name,
+            basePrice: room.basePrice,
+            guestCapacity: room.guestCapacity,
+            description: room.description,
+          }))
+        }
       },
       include: { category: true, pictures: true, rooms: true },
     });
@@ -61,9 +70,22 @@ class TenantPropertyRepository {
     id: string,
     data: UpdatePropertyInput
   ): Promise<Property> {
+    const { pictureUrls, ...propertyData } = data;
     return prisma.property.update({
       where: { id },
-      data,
+      data: {
+        ...propertyData,
+        ...(pictureUrls && pictureUrls.length > 0
+          ? {
+            pictures: {
+              deleteMany: {},
+              createMany: {
+                data: pictureUrls.map((url) => ({ pictureUrl: url })),
+              },
+            },
+          }
+        : {}),
+      },
       include: { category: true, pictures: true, rooms: true },
     });
   }

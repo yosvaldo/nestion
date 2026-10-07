@@ -18,6 +18,12 @@ export interface CreatePropertyInput {
   city: string;
   address?: string;
   pictureUrls?: string[];
+  rooms: {
+    name: string;
+    basePrice: number;
+    guestCapacity: number;
+    description?: string;
+  }[];
 }
 
 export interface UpdatePropertyInput {
@@ -26,6 +32,7 @@ export interface UpdatePropertyInput {
   description?: string;
   city?: string;
   address?: string;
+  pictureUrls?: string[];
 }
 
 export interface CreateRoomInput {
