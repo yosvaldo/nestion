@@ -2,42 +2,25 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { toast } from "sonner";
 import { ArrowLeft, Save, ImagePlus, Plus, Trash2 } from "lucide-react";
 import api from "@/configs/api.config";
 import SEO from "@/components/seo/seo";
 import { isAxiosError } from "axios";
-
-const formSchema = z.object({
-  name: z.string().min(5, "Nama properti minimal 5 karakter").max(250, "Maksimal 250 karakter"),
-  city: z.string().min(3, "Kota minimal 3 karakter").max(50, "Maksimal 50 karakter"),
-  category: z.string().min(1, "Kategori wajib diisi"),
-  description: z.string().min(20, "Deskripsi minimal 20 karakter").max(500, "Maksimal 500 karakter"),
-  
-  rooms: z.array(z.object({
-    name: z.string().min(2, "Tipe kamar minimal 2 karakter"),
-    basePrice: z.number("Harga wajib diisi").min(1, "Harga harus lebih dari 0"),
-    guestCapacity: z.number("Kapasitas wajib diisi").min(1, "Kapasitas minimal 1"),
-    description: z.string().optional(),
-  })).min(1, "Minimal harus ada 1 tipe kamar"),
-});
-
-type FormValues = z.infer<typeof formSchema>;
+import { createPropertySchema, type CreatePropertyFormValues } from "@/models/property.model";
 
 export default function CreatePropertyPage() {
   const navigate = useNavigate();
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
-  const { register, control, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+  const { register, control, handleSubmit, formState: { errors, isSubmitting } } = useForm<CreatePropertyFormValues>({
+    resolver: zodResolver(createPropertySchema),
     defaultValues: { 
       name: "", city: "", category: "", description: "", 
       rooms: [{ name: "", basePrice: 0, guestCapacity: 2, description: "" }] 
     },
   });
-
   const { fields, append, remove } = useFieldArray({
     control,
     name: "rooms",
@@ -63,7 +46,7 @@ export default function CreatePropertyPage() {
     setPreview(URL.createObjectURL(file));
   };
 
-  const onSubmit = async (data: FormValues) => {
+  const onSubmit = async (data: CreatePropertyFormValues) => {
     try {
       const formData = new FormData();
       formData.append("name", data.name);

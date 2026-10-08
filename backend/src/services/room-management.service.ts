@@ -59,17 +59,26 @@ class RoomManagementService {
   }
 
   async fetchPublicHolidays(year?: string, month?: string) {
-    let url = "https://upset.dev/tanggalmerah";
-    const params = new URLSearchParams();
-    if (year) params.append("year", year);
-    if (month) params.append("month", month);
-    if (params.toString()) url += `?${params.toString()}`;
-
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new AppError("Failed to fetch public holiday data.", 502);
+    try {
+      let url = "https://tanggalmerah.upset.dev/api/holidays";
+      const params = new URLSearchParams();
+      if (year) params.append("year", year);
+      if (month) params.append("month", month);
+      if (params.toString()) url += `?${params.toString()}`;
+      
+      const response = await fetch(url);
+      if (!response.ok) return [];
+      
+      const text = await response.text();
+      try {
+        const parsed = JSON.parse(text);
+        return parsed.data && Array.isArray(parsed.data) ? parsed.data : [];
+      } catch (err) {
+        return [];
+      }
+    } catch (error) {
+      return [];
     }
-    return response.json();
   }
 }
 

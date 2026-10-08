@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "@/configs/api.config";
 import SEO from "@/components/seo/seo";
-import { Plus, Search, Edit, Trash2, ArrowUpDown } from "lucide-react";
+import { Plus, Search, Edit, Trash2, ArrowUpDown, Settings } from "lucide-react";
 import { toast } from "sonner";
 
 interface TenantProperty {
@@ -10,7 +10,7 @@ interface TenantProperty {
   name: string;
   city: string;
   category: { name: string };
-  rooms: { id: string }[];
+  rooms: { id: string; name: string }[];
 }
 
 export default function TenantDashboardPage() {
@@ -115,11 +115,29 @@ export default function TenantDashboardPage() {
                           <span className="bg-slate-100 text-slate-700 px-2 py-1 rounded-md text-xs">{prop.category?.name}</span>
                         </td>
                         <td className="px-6 py-4 text-xs font-medium">
-                          {prop.rooms.length > 0 ? <span className="text-emerald-600">{prop.rooms.length} Types</span> : <span className="text-rose-500">No Rooms</span>}
+                          {prop.rooms.length > 0 ? (
+                            <div className="flex flex-col gap-2">
+                              {prop.rooms.map((room) => (
+                                <button
+                                  key={room.id}
+                                  onClick={() => navigate(`/tenant/rooms/${room.id}`)}
+                                  className="flex items-center gap-1.5 px-2.5 py-1.5 bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-900 rounded-lg w-fit transition-colors border border-amber-200"
+                                  title="Pengaturan Ketersediaan & Peak Season"
+                                >
+                                  <Settings className="w-3.5 h-3.5" /> 
+                                  {room.name}
+                                </button>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-rose-500">No Rooms</span>
+                          )}
                         </td>
-                        <td className="px-6 py-4 text-right flex justify-end gap-2">
-                          <button onClick={() => navigate(`/tenant/properties/${prop.id}/edit`)} className="p-2 text-slate-400 hover:text-amber-600"><Edit className="w-4 h-4" /></button>
-                          <button onClick={() => setPropertyToDelete(prop.id)} className="p-2 text-slate-400 hover:text-rose-600"><Trash2 className="w-4 h-4" /></button>
+                        <td className="px-6 py-4 text-right align-top">
+                          <div className="flex justify-end gap-2">
+                            <button onClick={() => navigate(`/tenant/properties/${prop.id}/edit`)} className="p-2 text-slate-400 hover:text-amber-600"><Edit className="w-4 h-4" /></button>
+                            <button onClick={() => setPropertyToDelete(prop.id)} className="p-2 text-slate-400 hover:text-rose-600"><Trash2 className="w-4 h-4" /></button>
+                          </div>
                         </td>
                       </tr>
                     ))
