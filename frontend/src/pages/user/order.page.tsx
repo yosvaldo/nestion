@@ -9,6 +9,7 @@ export default function UserOrdersPage() {
   const [orders, setOrders] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
+  const [startDate, setStartDate] = useState("");
   const [status, setStatus] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -19,7 +20,9 @@ export default function UserOrdersPage() {
     const fetchOrders = async () => {
       setLoading(true);
       try {
-        const res = await api.get("/orders", { params: { search, status: status || undefined, page, limit: 5 } });
+        const res = await api.get("/orders", { 
+          params: { search, startDate: startDate || undefined, status: status || undefined, page, limit: 5 } 
+        });
         if (isMounted) {
           setOrders(res.data.data);
           setTotalPages(res.data.meta?.totalPages || 1);
@@ -34,7 +37,7 @@ export default function UserOrdersPage() {
     };
     fetchOrders();
     return () => { isMounted = false; };
-  }, [search, status, page, refresh]);
+  }, [search, startDate, status, page, refresh]);
 
   const handleUploadProof = async (orderId: string, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -51,8 +54,9 @@ export default function UserOrdersPage() {
       });
       toast.success("Bukti pembayaran berhasil diupload.");
       setRefresh((prev) => prev + 1);
-    } catch {
-      toast.error("Gagal mengupload bukti pembayaran.");
+    } catch (error) {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || "Gagal mengupload bukti pembayaran.");
     }
   };
 
@@ -77,16 +81,26 @@ export default function UserOrdersPage() {
           </div>
 
           <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row gap-4 justify-between items-center">
-            <div className="relative w-full md:w-80">
-              <Search className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+            <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto flex-1">
+              <div className="relative w-full md:w-64">
+                <Search className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Cari No. Order..."
+                  value={search}
+                  onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                  className="w-full pl-9 pr-4 py-2 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                />
+              </div>
               <input
-                type="text"
-                placeholder="Cari No. Order..."
-                value={search}
-                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                className="w-full pl-9 pr-4 py-2 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                type="date"
+                value={startDate}
+                onChange={(e) => { setStartDate(e.target.value); setPage(1); }}
+                className="w-full md:w-48 border rounded-xl px-3 py-2 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                title="Filter berdasarkan tanggal order"
               />
             </div>
+            
             <select
               value={status}
               onChange={(e) => { setStatus(e.target.value); setPage(1); }}
@@ -121,9 +135,11 @@ export default function UserOrdersPage() {
                       </span>
                     </div>
                     <h3 className="font-semibold text-slate-800">{order.room.property.name} - {order.room.name}</h3>
-                    <div className="flex items-center gap-4 text-xs text-slate-500">
+                    <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500">
                       <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> {order.checkInDate.split("T")[0]} s/d {order.checkOutDate.split("T")[0]}</span>
-                      <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> Exp: {new Date(order.paymentExpiresAt).toLocaleTimeString()}</span>
+                      {order.status === "MENUNGGU_PEMBAYARAN" && (
+                        <span className="flex items-center gap-1 text-rose-500 font-medium"><Clock className="w-3.5 h-3.5" /> Exp: {new Date(order.paymentExpiresAt).toLocaleTimeString()}</span>
+                      )}
                     </div>
                     <p className="text-sm font-bold text-amber-600">Rp {order.totalPrice.toLocaleString("id-ID")}</p>
                   </div>

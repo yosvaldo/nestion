@@ -48,6 +48,11 @@ class OrderService {
     if (order.userId !== userId) throw new AppError("Unauthorized action", 403);
     if (order.status !== OrderStatus.MENUNGGU_PEMBAYARAN) throw new AppError("Invalid order status for upload", 400);
 
+    if (new Date() > order.paymentExpiresAt) {
+      await orderRepository.cancelOrder(orderId);
+      throw new AppError("Batas waktu 1 jam telah habis. Pesanan dibatalkan otomatis.", 400);
+    }
+
     const proofUrl = await uploadToCloudinary(file, "payment-proofs");
     return orderRepository.updateStatusAndProof(orderId, OrderStatus.MENUNGGU_KONFIRMASI_PEMBAYARAN, proofUrl);
   }

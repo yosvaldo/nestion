@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import api from "@/configs/api.config";
 import SEO from "@/components/seo/seo";
 import RoomList from "@/components/property/RoomList";
@@ -10,22 +10,29 @@ import type { PropertyDetailResponse, PriceCalendarEntry } from "@/models/proper
 
 export default function PropertyDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();  
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const initialCheckIn = searchParams.get("checkInDate") || "";
+  const initialCheckOut = searchParams.get("checkOutDate") || "";
   const [property, setProperty] = useState<PropertyDetailResponse | null>(null);
   const [calendarData, setCalendarData] = useState<PriceCalendarEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [isBooking, setIsBooking] = useState(false);
   const [selectedRoomId, setSelectedRoomId] = useState<string>("");
-  const [selectedDate, setSelectedDate] = useState<string>("");
+  const [checkInDate, setCheckInDate] = useState<string>(initialCheckIn);
+  const [checkOutDate, setCheckOutDate] = useState<string>(initialCheckOut);
+  const initialDate = initialCheckIn ? new Date(initialCheckIn) : new Date();
+  const [currentMonth, setCurrentMonth] = useState(initialDate.getMonth() + 1);
+  const [currentYear, setCurrentYear] = useState(initialDate.getFullYear());
 
   useEffect(() => {
     const fetchPropertyDetail = async () => {
       setLoading(true);
       try {
         const propRes = await api.get(`/properties/${id}`);        
-          setProperty(propRes.data.data);          
+        setProperty(propRes.data.data);          
       } catch {
-         navigate("/error");
+        navigate("/error");
       } finally {
         setLoading(false);
       }
@@ -37,28 +44,66 @@ export default function PropertyDetailPage() {
     const fetchPricingCalendar = async () => {
       if (!selectedRoomId) return;
       try {
-        const calRes = await api.get(`/properties/calendar/${selectedRoomId}`);
-        setCalendarData(calRes.data.data);
+        const calRes = await api.get(`/properties/${id}/calendar?year=${currentYear}&month=${currentMonth}`);
+        const propertyCalendar = calRes.data.data;
+        type CalendarDay = { date: string; price: number; isAvailable: boolean };
+        type RoomCalendar = { roomId: string; basePrice: number; calendar: CalendarDay[] };        
+        const roomCal = propertyCalendar.rooms.find((r: RoomCalendar) => r.roomId === selectedRoomId);
+        
+        if (roomCal) {
+          const formatted = roomCal.calendar.map((day: CalendarDay) => ({
+            date: day.date,
+            price: day.price,
+            isAvailable: day.isAvailable,
+            isPeakSeason: day.price > roomCal.basePrice, 
+          }));
+          setCalendarData(formatted);
+        }
       } catch {
         setCalendarData([]);
       }
     };
     fetchPricingCalendar();
-  }, [selectedRoomId]);
+  }, [selectedRoomId, id, currentMonth, currentYear]);
+
+  const handleDateSelection = (date: string) => {
+    if (!checkInDate || (checkInDate && checkOutDate)) {
+      setCheckInDate(date);
+      setCheckOutDate("");
+    } else {
+      const inDate = new Date(checkInDate);
+      const clickedDate = new Date(date);
+      if (clickedDate > inDate) {
+        setCheckOutDate(date);
+      } else {
+        setCheckInDate(date);
+        setCheckOutDate("");
+      }
+    }
+  };
 
   const handleBookNow = async () => {
+    if (!checkInDate || !checkOutDate) return toast.error("Silakan lengkapi tanggal Check-In dan Check-Out.");
     setIsBooking(true);
     try {
-      const checkIn = new Date(selectedDate);
-      const checkOut = new Date(checkIn.setDate(checkIn.getDate() + 1)).toISOString().split("T")[0];
-      await api.post("/orders", { roomId: selectedRoomId, checkInDate: selectedDate, checkOutDate: checkOut });
+      await api.post("/orders", { roomId: selectedRoomId, checkInDate, checkOutDate });
       toast.success("Pesanan dibuat! Selesaikan pembayaran.");
-      navigate("/user/orders");
+      navigate("/orders");
       setIsBooking(false);
     } catch {
-      toast.error("Gagal membuat pesanan. Pastikan tanggal tersedia.");
+      toast.error("Gagal membuat pesanan. Pastikan rentang tanggal tersedia.");
       setIsBooking(false);
     }
+  };
+
+  const handleNextMonth = () => {
+    if (currentMonth === 12) { setCurrentMonth(1); setCurrentYear(y => y + 1); }
+    else { setCurrentMonth(m => m + 1); }
+  };
+
+  const handlePrevMonth = () => {
+    if (currentMonth === 1) { setCurrentMonth(12); setCurrentYear(y => y - 1); }
+    else { setCurrentMonth(m => m - 1); }
   };
 
   if (loading || !property) {
@@ -96,33 +141,51 @@ export default function PropertyDetailPage() {
               {property.description}
             </p>
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-8">
+          
+          <div className="flex flex-col gap-10">
+            <div className="w-full">
               <RoomList 
                 rooms={property.rooms} 
                 selectedRoomId={selectedRoomId}
                 onSelectRoom={setSelectedRoomId}
               />
             </div>
-            <div className="lg:col-span-1">
-              <div className="sticky top-6 space-y-6">
-                <PricingCalendar 
-                  priceData={calendarData} 
-                  selectedDate={selectedDate}
-                  onSelectDate={setSelectedDate}
-                />
-                <div className="bg-slate-900 rounded-2xl p-6 text-white shadow-xl">
-                  <h4 className="font-bold mb-4">Reservation Summary</h4>
-                  {selectedRoomId && selectedDate ? (
+            
+            <div className="w-full flex flex-col gap-6 border-t border-slate-200 pt-10">
+              <PricingCalendar 
+                priceData={calendarData} 
+                checkInDate={checkInDate}
+                checkOutDate={checkOutDate}
+                onSelectDate={handleDateSelection}
+                currentMonth={currentMonth}
+                currentYear={currentYear}
+                onNextMonth={handleNextMonth}
+                onPrevMonth={handlePrevMonth}
+              />
+              
+              <div className="bg-slate-900 rounded-2xl p-6 md:p-8 text-white shadow-xl flex flex-col md:flex-row justify-between items-center gap-6">
+                <div>
+                  <h4 className="font-bold text-xl mb-1">Reservation Summary</h4>
+                  <p className="text-slate-400 text-sm">
+                    {selectedRoomId && checkInDate && checkOutDate 
+                      ? `Tanggal terpilih: ${checkInDate} s/d ${checkOutDate}`
+                      : "Pilih kamar, lalu tentukan tanggal Check-In dan Check-Out untuk memesan."}
+                  </p>
+                </div>
+                
+                <div className="w-full md:w-auto min-w-50">
+                  {selectedRoomId && checkInDate && checkOutDate ? (
                     <button
                       onClick={handleBookNow}
                       disabled={isBooking}
-                      className="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 rounded-xl transition-colors disabled:opacity-50"
+                      className="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3.5 px-8 rounded-xl transition-colors disabled:opacity-50 text-lg"
                     >
                       {isBooking ? "Memproses..." : "Book Now"}
                     </button>
                   ) : (
-                    <p className="text-sm text-slate-400">Silahkan pilih kamar dan tanggal untuk memesan.</p>
+                    <button disabled className="w-full bg-slate-800 text-slate-500 font-bold py-3.5 px-8 rounded-xl cursor-not-allowed">
+                      Menunggu Pilihan
+                    </button>
                   )}
                 </div>
               </div>

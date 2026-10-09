@@ -25,6 +25,7 @@ export interface PriceCalendarEntry {
   date: string; 
   price: number;
   isPeakSeason: boolean;
+  isAvailable?: boolean;
 }
 
 export interface PropertyDetailResponse {

@@ -20,8 +20,9 @@ export default function TenantOrdersPage() {
   const [status, setStatus] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [refresh, setRefresh] = useState(0);
+  const [refresh, setRefresh] = useState(0);  
   const [cancelId, setCancelId] = useState<string | null>(null);
+  const [confirmData, setConfirmData] = useState<{ id: string; action: "ACCEPT" | "REJECT" } | null>(null);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -39,10 +40,16 @@ export default function TenantOrdersPage() {
     fetchOrders();
   }, [status, page, refresh]);
 
-  const handleConfirm = async (id: string, action: "ACCEPT" | "REJECT") => {
+  const executeConfirm = async () => {
+    if (!confirmData) return;
     try {
-      await api.patch(`/tenant-orders/${id}/confirm`, { action });
-      toast.success(`Pembayaran berhasil di-${action.toLowerCase()}.`);
+      await api.patch(`/tenant-orders/${confirmData.id}/confirm`, { action: confirmData.action });
+      toast.success(
+        confirmData.action === "ACCEPT" 
+          ? "Pembayaran berhasil diterima. Status menjadi Diproses." 
+          : "Pembayaran ditolak. Status kembali Menunggu Pembayaran."
+      );
+      setConfirmData(null);
       setRefresh((r) => r + 1);
     } catch {
       toast.error("Gagal memproses pembayaran.");
@@ -63,7 +70,7 @@ export default function TenantOrdersPage() {
 
   return (
     <>
-      <SEO title="Mengatur Pesanan | Nestion" description="Tenant order management" />
+      <SEO description="Tenant order management" title="Mengatur Pesanan | Nestion"/>
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <h1 className="text-2xl font-bold text-slate-900">Transaction Management</h1>
@@ -112,17 +119,17 @@ export default function TenantOrdersPage() {
                     <td className="px-6 py-4 text-right flex justify-end gap-2 items-center">
                       {o.paymentProofUrl && (
                         <a href={o.paymentProofUrl} target="_blank" rel="noreferrer" className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg tooltip" title="View Proof">
-                          <Eye className="w-4 h-4" />
+                          <Eye className="w-4 h-4"/>
                         </a>
                       )}
                       {o.status === "MENUNGGU_KONFIRMASI_PEMBAYARAN" && (
                         <>
-                          <button onClick={() => handleConfirm(o.id, "ACCEPT")} className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg"><Check className="w-4 h-4" /></button>
-                          <button onClick={() => handleConfirm(o.id, "REJECT")} className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg"><X className="w-4 h-4" /></button>
+                          <button onClick={() => setConfirmData({ id: o.id, action: "ACCEPT" })} className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg"><Check className="w-4 h-4"/></button>
+                          <button onClick={() => setConfirmData({ id: o.id, action: "REJECT" })} className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg"><X className="w-4 h-4"/></button>
                         </>
                       )}
                       {o.status === "MENUNGGU_PEMBAYARAN" && (
-                        <button onClick={() => setCancelId(o.id)} className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg"><Ban className="w-4 h-4" /></button>
+                        <button onClick={() => setCancelId(o.id)} className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg"><Ban className="w-4 h-4"/></button>
                       )}
                     </td>
                   </tr>
@@ -140,6 +147,32 @@ export default function TenantOrdersPage() {
           </div>
         </div>
       </div>
+
+      {confirmData && (
+        <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl">
+            <h3 className="text-lg font-bold mb-2">
+              {confirmData.action === "ACCEPT" ? "Konfirmasi Pembayaran?" : "Tolak Pembayaran?"}
+            </h3>
+            <p className="text-sm text-slate-500 mb-6">
+              {confirmData.action === "ACCEPT"
+                ? "Pembayaran akan diterima dan status pesanan akan menjadi Diproses."
+                : "Pembayaran akan ditolak dan status pesanan akan dikembalikan ke Menunggu Pembayaran."}
+            </p>
+            <div className="flex justify-end gap-3">
+              <button onClick={() => setConfirmData(null)} className="px-4 py-2 text-sm font-semibold rounded-xl bg-slate-100 hover:bg-slate-200">Kembali</button>
+              <button 
+                onClick={executeConfirm} 
+                className={`px-4 py-2 text-sm font-semibold text-white rounded-xl ${
+                  confirmData.action === "ACCEPT" ? "bg-emerald-600 hover:bg-emerald-700" : "bg-rose-600 hover:bg-rose-700"
+                }`}
+              >
+                {confirmData.action === "ACCEPT" ? "Ya, Terima" : "Ya, Tolak"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {cancelId && (
         <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4">

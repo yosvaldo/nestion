@@ -3,66 +3,91 @@ import type { PriceCalendarEntry } from "@/models/property.model";
 
 interface PricingCalendarProps {
   priceData: PriceCalendarEntry[];
-  selectedDate?: string;
+  checkInDate: string;
+  checkOutDate: string;
   onSelectDate: (date: string) => void;
+  currentMonth: number;
+  currentYear: number;
+  onNextMonth: () => void;
+  onPrevMonth: () => void;
 }
 
-export default function PricingCalendar({ priceData, selectedDate, onSelectDate }: PricingCalendarProps) {
+export default function PricingCalendar({ 
+  priceData, checkInDate, checkOutDate, onSelectDate, currentMonth, currentYear, onNextMonth, onPrevMonth 
+}: PricingCalendarProps) {
+  
   const formatRupiah = (price: number) => {
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(price);
+    if (price >= 1000000) return `Rp ${(price / 1000000).toFixed(1)}Jt`;
+    if (price >= 1000) return `Rp ${(price / 1000).toFixed(0)}rb`;
+    return `Rp ${price}`;
   };
 
+  if (priceData.length === 0) {
+    return (
+      <div className="bg-slate-50 border border-slate-200 rounded-2xl p-8 text-center text-sm text-slate-500">
+        Pilih kamar untuk melihat ketersediaan tanggal.
+      </div>
+    );
+  }
+
+  const monthLabel = new Date(currentYear, currentMonth - 1).toLocaleDateString("id-ID", { month: "long", year: "numeric" });
+
   return (
-    <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm font-sans">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-bold text-slate-900">30-Day Price Comparison</h3>
+    <div className="bg-white border border-slate-200 rounded-2xl p-4 md:p-6 shadow-sm font-sans">
+      <div className="flex items-center justify-between mb-4 md:mb-6">
+        <h3 className="text-base md:text-lg font-bold text-slate-900">{monthLabel}</h3>
         <div className="flex gap-2">
-          <button className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50">
+          <button onClick={onPrevMonth} className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50">
             <ChevronLeft className="w-4 h-4" />
           </button>
-          <button className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50">
+          <button onClick={onNextMonth} className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50">
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+      <div className="grid grid-cols-4 lg:grid-cols-7 gap-1.5 md:gap-2">
         {priceData.map((day) => {
-          const isSelected = selectedDate === day.date;
+          const isCheckIn = checkInDate === day.date;
+          const isCheckOut = checkOutDate === day.date;
+          const isUnavailable = day.isAvailable === false;
+          
+          const inDateObj = checkInDate ? new Date(checkInDate) : null;
+          const outDateObj = checkOutDate ? new Date(checkOutDate) : null;
+          const currDateObj = new Date(day.date);
+          const isInRange = inDateObj && outDateObj && currDateObj > inDateObj && currDateObj < outDateObj;
+
           const dateObj = new Date(day.date);
-          const dayName = dateObj.toLocaleDateString("en-US", { weekday: "short" });
+          const dayName = dateObj.toLocaleDateString("id-ID", { weekday: "short" });
           const dayNumber = dateObj.getDate();
-          const monthName = dateObj.toLocaleDateString("en-US", { month: "short" });
 
           return (
             <button
               key={day.date}
               onClick={() => onSelectDate(day.date)}
-              className={`p-3 rounded-xl border flex flex-col items-center justify-center transition-all ${
-                isSelected
-                  ? "bg-amber-600 border-amber-600 text-white shadow-md"
+              disabled={isUnavailable}
+              className={`p-1.5 md:p-2 min-h-18 md:min-h-22 w-full border flex flex-col items-center justify-center transition-all relative overflow-hidden rounded-xl ${
+                isUnavailable
+                  ? "bg-slate-50 border-slate-200 opacity-50 cursor-not-allowed"
+                  : (isCheckIn || isCheckOut)
+                  ? "bg-amber-600 border-amber-600 text-white shadow-md z-10"
+                  : isInRange
+                  ? "bg-amber-50 border-amber-200 text-amber-900"
                   : day.isPeakSeason
                   ? "bg-rose-50 border-rose-200 text-rose-900 hover:border-rose-300"
-                  : "bg-white border-slate-200 text-slate-700 hover:border-amber-400 hover:shadow-sm"
+                  : "bg-white border-slate-200 text-slate-700 hover:border-amber-400"
               }`}
             >
-              <span className={`text-[10px] uppercase font-bold tracking-wider ${isSelected ? "text-amber-100" : "text-slate-400"}`}>
+              <span className={`text-[9px] md:text-[10px] uppercase font-semibold ${isCheckIn || isCheckOut ? "text-amber-100" : "text-slate-400"}`}>
                 {dayName}
               </span>
-              <span className="text-xl font-extrabold mb-1">
-                {dayNumber} <span className="text-sm font-medium">{monthName}</span>
+              <span className={`text-sm md:text-base font-extrabold leading-tight mt-0.5 ${(isCheckIn || isCheckOut) ? "text-white" : isUnavailable ? "text-slate-400" : "text-slate-800"}`}>
+                {dayNumber}
               </span>
-              <span className={`text-xs font-bold ${isSelected ? "text-white" : day.isPeakSeason ? "text-rose-600" : "text-amber-600"}`}>
-                {formatRupiah(day.price)}
-              </span>
-              {day.isPeakSeason && !isSelected && (
-                <span className="text-[9px] mt-1 bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded-full font-semibold">
-                  High Season
+              {!isUnavailable && (
+                // PERBAIKAN CSS: Hapus truncate, gunakan responsif text sizing
+                <span className={`text-[9px] md:text-xs font-bold w-full text-center mt-1 leading-none ${(isCheckIn || isCheckOut) ? "text-white" : day.isPeakSeason ? "text-rose-600" : "text-amber-600"}`}>
+                  {formatRupiah(day.price)}
                 </span>
               )}
             </button>

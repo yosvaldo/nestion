@@ -80,10 +80,10 @@ export default function PropertyList({ properties, loading, filters, totalPages,
                     </div>
                   </div>
 
-                  <Link to={`/properties/${item.id}`}>
-                  <h4 className="font-bold text-slate-900 text-base mb-3 line-clamp-1 group-hover:text-amber-600 transition-colors">
-                    {item.name}
-                  </h4>
+                  <Link to={`/properties/${item.id}?checkInDate=${filters.checkInDate || ""}&checkOutDate=${filters.checkOutDate || ""}`}>
+                    <h4 className="font-bold text-slate-900 text-base mb-3 line-clamp-1 group-hover:text-amber-600 transition-colors">
+                      {item.name}
+                    </h4>
                   </Link>
 
                   <div className="border-t border-slate-100 pt-3 flex items-baseline justify-between">
