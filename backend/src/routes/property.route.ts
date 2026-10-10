@@ -10,7 +10,9 @@ const propertyRoute = Router();
 propertyRoute.get("/", propertyController.getAll);
 propertyRoute.post("/", verifyToken("access"), roleGuard("TENANT"), propertyImageUploader().single("picture"), tenantPropertyController.createProperty);
 
+propertyRoute.get("/all-cities", propertyController.getAllIndonesiaCities);
 propertyRoute.get("/cities", propertyController.getCities);
+
 propertyRoute.get("/featured", propertyController.getFeatured);
 propertyRoute.get("/my-properties", verifyToken("access"), roleGuard("TENANT"), tenantPropertyController.getMyProperties);
 

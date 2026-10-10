@@ -1,7 +1,10 @@
-import { Star, ArrowUpDown, ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Star, ChevronLeft, ChevronRight, Search } from "lucide-react";
 import type { PropertyFilterParams } from "../../models/property.model";
 import type { PropertyResponse } from "../../pages/home/home.page";
 import { Link } from "react-router-dom";
+import api from "@/configs/api.config";
+import { useDebounce } from "@/hooks/use-debounce";
 
 interface PropertyListProps {
   properties: PropertyResponse[];
@@ -12,38 +15,78 @@ interface PropertyListProps {
 }
 
 export default function PropertyList({ properties, loading, filters, totalPages, onFilterChange }: PropertyListProps) {
-  const handleSortToggle = () => {
-    const newOrder = filters.sortOrder === "asc" ? "desc" : "asc";
-    onFilterChange({ sortOrder: newOrder, sortBy: "price" });
+  const [searchTerm, setSearchTerm] = useState(filters.name || "");
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchCategories = async () => {
+      try {
+        const res = await api.get("/categories");
+        if (isMounted) setCategories(res.data.data);
+      } catch {
+        console.error("Failed to fetch categories");
+      }
+    };
+    fetchCategories();
+    return () => { isMounted = false; };
+  }, []);
+
+  useEffect(() => {
+    if (debouncedSearchTerm !== (filters.name || "")) {
+      onFilterChange({ name: debouncedSearchTerm, page: 1 });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearchTerm, filters.name]);
+
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const [sortBy, sortOrder] = e.target.value.split("-") as ["price" | "name", "asc" | "desc"];
+    onFilterChange({ sortBy, sortOrder, page: 1 });
   };
 
   return (
     <div className="mt-16 font-sans">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+      <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-8">
         <div>
           <h3 className="text-2xl font-bold text-slate-900">Rekomendasi Penginapan</h3>
           <p className="text-sm text-slate-500">Harga terendah yang tersedia untuk tanggal pilihan Anda</p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="relative">
+        <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
+          {/* Search by Name */}
+          <div className="relative flex-1 sm:flex-initial">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
               type="text"
               placeholder="Cari nama properti..."
-              value={filters.name || ""}
-              onChange={(e) => onFilterChange({ name: e.target.value, page: 1 })}
-              className="pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 w-full sm:w-48"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 w-full sm:w-56"
             />
           </div>
 
-          <button
-            onClick={handleSortToggle}
-            className="flex items-center gap-2 bg-white border border-slate-200 px-4 py-2 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+          <select
+            value={filters.categoryId || ""}
+            onChange={(e) => onFilterChange({ categoryId: e.target.value, page: 1 })}
+            className="bg-white border border-slate-200 px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 min-w-36"
           >
-            <ArrowUpDown className="w-4 h-4" />
-            <span>Harga: {filters.sortOrder === "asc" ? "Termurah" : "Termahal"}</span>
-          </button>
+            <option value="">Semua Kategori</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>{cat.name}</option>
+            ))}
+          </select>
+
+          <select
+            value={`${filters.sortBy || "price"}-${filters.sortOrder || "asc"}`}
+            onChange={handleSortChange}
+            className="bg-white border border-slate-200 px-3 py-2 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-amber-500 transition-colors"
+          >
+            <option value="price-asc">Harga: Termurah</option>
+            <option value="price-desc">Harga: Termahal</option>
+            <option value="name-asc">Nama: A - Z</option>
+            <option value="name-desc">Nama: Z - A</option>
+          </select>
         </div>
       </div>
 

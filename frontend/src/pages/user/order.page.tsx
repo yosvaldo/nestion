@@ -4,6 +4,7 @@ import SEO from "@/components/seo/seo";
 import { toast } from "sonner";
 import { Upload, XCircle, Search, Calendar, Clock } from "lucide-react";
 import type { OrderItem } from "@/models/order.model";
+import { useDebounce } from "@/hooks/use-debounce";
 
 export default function UserOrdersPage() {
   const [orders, setOrders] = useState<OrderItem[]>([]);
@@ -14,6 +15,7 @@ export default function UserOrdersPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [refresh, setRefresh] = useState(0);
+  const debouncedSearch = useDebounce(search, 500);
 
   useEffect(() => {
     let isMounted = true;
@@ -21,7 +23,7 @@ export default function UserOrdersPage() {
       setLoading(true);
       try {
         const res = await api.get("/orders", { 
-          params: { search, startDate: startDate || undefined, status: status || undefined, page, limit: 5 } 
+          params: { search: debouncedSearch, startDate: startDate || undefined, status: status || undefined, page, limit: 10 } 
         });
         if (isMounted) {
           setOrders(res.data.data);
@@ -37,7 +39,7 @@ export default function UserOrdersPage() {
     };
     fetchOrders();
     return () => { isMounted = false; };
-  }, [search, startDate, status, page, refresh]);
+  }, [debouncedSearch, startDate, status, page, refresh]);
 
   const handleUploadProof = async (orderId: string, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

@@ -37,6 +37,21 @@ class OrderService {
     const checkOut = new Date(input.checkOutDate);
     if (checkIn >= checkOut) throw new AppError("Check-out date must be after check-in date", 400);
 
+    const existingOrder = await prisma.order.findFirst({
+      where: {
+        roomId: input.roomId,
+        status: { 
+          in: [OrderStatus.MENUNGGU_PEMBAYARAN, OrderStatus.MENUNGGU_KONFIRMASI_PEMBAYARAN, OrderStatus.DIPROSES] 
+        },
+        checkInDate: { lt: checkOut },
+        checkOutDate: { gt: checkIn },
+      }
+    });
+
+    if (existingOrder) {
+      throw new AppError("Kamar sudah terpesan pada rentang tanggal tersebut.", 400);
+    }
+    
     const totalPrice = await this.calculateTotalPrice(input.roomId, checkIn, checkOut);
     return this.persistOrder(userId, input.roomId, checkIn, checkOut, totalPrice);
   }

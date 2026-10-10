@@ -83,12 +83,13 @@ class PropertyRepository {
     if (guestCapacity) roomWhere.guestCapacity = { gte: guestCapacity };
     if (checkInDate && checkOutDate) {
       roomWhere.unavailabilities = {
-        none: { unavailabilityDate: { gte: checkInDate, lte: checkOutDate } },
+        none: { unavailabilityDate: { gte: checkInDate, lt: checkOutDate } },
       };
       roomWhere.orders = {
         none: {
           status: { in: ACTIVE_ORDER_STATUSES },
-          OR: [{ checkInDate: { lte: checkOutDate }, checkOutDate: { gte: checkInDate } }],
+          checkInDate: { lt: checkOutDate },
+          checkOutDate: { gt: checkInDate },
         },
       };
     }

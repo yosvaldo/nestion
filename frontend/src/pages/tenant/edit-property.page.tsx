@@ -1,95 +1,18 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { useForm, useFieldArray } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import api from "@/configs/api.config";
+import { useParams } from "react-router-dom";
 import SEO from "@/components/seo/seo";
-import { ArrowLeft, Save, ImagePlus, Plus, Trash2 } from "lucide-react";
-import { toast } from "sonner";
-import { isAxiosError } from "axios";
-import { editPropertySchema, type EditPropertyFormValues, type PropertyDetailResponse } from "@/models/property.model";
+import { ArrowLeft, Save, ImagePlus, Plus, Trash2, X, ChevronDown, Search, Check } from "lucide-react";
+import { useEditProperty } from "@/hooks/use-edit-property";
 
 export default function EditPropertyPage() {
   const { id } = useParams();
-  const navigate = useNavigate();  
-  const [property, setProperty] = useState<PropertyDetailResponse | null>(null);
-  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
-  const [deletedRooms, setDeletedRooms] = useState<string[]>([]);
   
-  const { register, control, handleSubmit, reset, getValues, formState: { errors, isSubmitting } } = useForm<EditPropertyFormValues>({
-    resolver: zodResolver(editPropertySchema),
-    defaultValues: { rooms: [] }
-  });
-
-  const { fields, append, remove } = useFieldArray({ control, name: "rooms" });
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [propRes, catRes] = await Promise.all([api.get(`/properties/${id}`), api.get("/categories")]);
-        const data = propRes.data.data;
-        setProperty(data);
-        setCategories(catRes.data.data);        
-        reset({
-          name: data.name,
-          city: data.city,
-          category: data.category?.id || "",
-          description: data.description,
-          rooms: data.rooms || []
-        });
-        if (data.pictureUrls?.length > 0) setPreview(data.pictureUrls[0]);
-      } catch {
-        toast.error("Gagal memuat data properti");
-        navigate("/tenant");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [id, navigate, reset]);
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 1024 * 1024) return toast.error("Ukuran gambar maksimal 1MB");
-    setImageFile(file);
-    setPreview(URL.createObjectURL(file));
-  };
-
-  const handleRemoveRoom = (index: number) => {
-    const room = getValues("rooms")[index];
-    if (room.id) setDeletedRooms((prev) => [...prev, room.id as string]);
-    remove(index);
-  };
-
-  const onSubmit = async (data: EditPropertyFormValues) => {
-    try {
-      const formData = new FormData();
-      formData.append("name", data.name);
-      formData.append("city", data.city);
-      formData.append("categoryId", data.category);
-      formData.append("description", data.description);
-      if (imageFile) formData.append("picture", imageFile);
-      await api.patch(`/properties/${id}`, formData, { headers: { "Content-Type": "multipart/form-data" } });
-      await Promise.all(deletedRooms.map(roomId => api.delete(`/properties/${id}/rooms/${roomId}`)));
-
-      await Promise.all(data.rooms.map(room => {
-        const payload = { name: room.name, basePrice: room.basePrice, guestCapacity: room.guestCapacity, description: room.description };
-        return room.id 
-          ? api.patch(`/properties/${id}/rooms/${room.id}`, payload)
-          : api.post(`/properties/${id}/rooms`, payload);
-      }));
-
-      toast.success("Properti dan kamar berhasil diperbarui!");
-      navigate("/tenant");
-    } catch (err) {
-      if (isAxiosError(err)) toast.error(err.response?.data?.message || "Gagal memperbarui properti.");
-      else toast.error("Gagal memperbarui properti.");
-    }
-  };
+  const { 
+    methods: { register, handleSubmit, setValue, formState: { errors, isSubmitting } },
+    fields, append, selectedCity, navigate, loading, property,
+    categories, onSubmit, handleImageChange, removeExistingImage, removeNewImage, handleRemoveRoom,
+    existingPictures, newPreviews,
+    cityRef, isCityOpen, setIsCityOpen, citySearch, setCitySearch, filteredCities, allCities
+  } = useEditProperty(id);
 
   if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div></div>;
   const inputClass = "w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 bg-slate-50";
@@ -116,9 +39,56 @@ export default function EditPropertyPage() {
                   <input {...register("name")} className={inputClass} />
                   {errors.name && <p className="text-xs text-rose-500 mt-1.5">{errors.name.message}</p>}
                 </div>
-                <div>
+                
+                <div className="relative" ref={cityRef}>
                   <label className="block text-sm font-semibold text-slate-700 mb-1.5">Kota</label>
-                  <input {...register("city")} className={inputClass} />
+                  <div 
+                    className={`${inputClass} flex justify-between items-center cursor-pointer`}
+                    onClick={() => setIsCityOpen(!isCityOpen)}
+                  >
+                    <span className={selectedCity ? "text-slate-900" : "text-slate-400"}>
+                      {selectedCity || "Cari dan pilih kota..."}
+                    </span>
+                    <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isCityOpen ? "rotate-180" : ""}`} />
+                  </div>
+                  
+                  {isCityOpen && (
+                    <div className="absolute top-[calc(100%+8px)] left-0 w-full bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden flex flex-col">
+                      <div className="p-2 border-b border-slate-100 flex items-center gap-2 bg-slate-50/50">
+                        <Search className="w-4 h-4 text-slate-400 ml-1" />
+                        <input
+                          autoFocus
+                          type="text"
+                          placeholder="Ketik nama kota..."
+                          value={citySearch}
+                          onChange={(e) => setCitySearch(e.target.value)}
+                          className="w-full bg-transparent text-sm py-1.5 focus:outline-none text-slate-800"
+                        />
+                      </div>
+                      <ul className="max-h-52 overflow-y-auto p-1.5">
+                        {allCities.length === 0 ? (
+                          <li className="px-3 py-4 text-sm text-slate-500 text-center">Memuat data kota...</li>
+                        ) : filteredCities.length === 0 ? (
+                          <li className="px-3 py-4 text-sm text-slate-500 text-center">Kota tidak ditemukan.</li>
+                        ) : (
+                          filteredCities.map(city => (
+                            <li
+                              key={city}
+                              onClick={() => {
+                                setValue("city", city, { shouldValidate: true });
+                                setIsCityOpen(false);
+                                setCitySearch("");
+                              }}
+                              className="px-3 py-2 text-sm text-slate-700 hover:bg-amber-50 rounded-lg cursor-pointer flex justify-between items-center"
+                            >
+                              {city}
+                              {selectedCity === city && <Check className="w-4 h-4 text-amber-600" />}
+                            </li>
+                          ))
+                        )}
+                      </ul>
+                    </div>
+                  )}
                   {errors.city && <p className="text-xs text-rose-500 mt-1.5">{errors.city.message}</p>}
                 </div>
               </div>
@@ -135,17 +105,35 @@ export default function EditPropertyPage() {
                 <textarea {...register("description")} rows={3} className={`${inputClass} resize-none`}></textarea>
                 {errors.description && <p className="text-xs text-rose-500 mt-1.5">{errors.description.message}</p>}
               </div>
+              
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Foto Utama (Maks 1MB)</label>
-                <div className="flex items-center gap-4">
-                  <label className="flex flex-col items-center justify-center w-32 h-32 border-2 border-dashed border-slate-300 rounded-2xl cursor-pointer hover:bg-slate-50 hover:border-amber-500 bg-slate-50 overflow-hidden relative">
-                    {preview ? <img src={preview} alt="Preview" className="w-full h-full object-cover" /> : <ImagePlus className="w-6 h-6 text-slate-400" />}
-                    <input type="file" accept=".jpg,.jpeg,.png" className="hidden" onChange={handleImageChange} />
+                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Foto Properti (Maks 1MB per file)</label>
+                <div className="flex flex-wrap gap-4 mt-2">
+                  {existingPictures.map((url, i) => (
+                    <div key={`existing-${i}`} className="relative w-24 h-24 rounded-2xl overflow-hidden border border-slate-200 group">
+                      <img src={url} alt={`Existing ${i}`} className="w-full h-full object-cover" />
+                      <button type="button" onClick={() => removeExistingImage(i)} className="absolute top-1 right-1 bg-rose-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 hover:bg-rose-600 transition-opacity">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                  {newPreviews.map((url, i) => (
+                    <div key={`new-${i}`} className="relative w-24 h-24 rounded-2xl overflow-hidden border border-amber-200">
+                      <img src={url} alt={`New ${i}`} className="w-full h-full object-cover" />
+                      <button type="button" onClick={() => removeNewImage(i)} className="absolute top-1 right-1 bg-rose-500 text-white rounded-full p-1 hover:bg-rose-600">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                  <label className="flex flex-col items-center justify-center w-24 h-24 border-2 border-dashed border-slate-300 rounded-2xl cursor-pointer hover:bg-slate-50 hover:border-amber-500 bg-slate-50 transition-colors">
+                    <ImagePlus className="w-6 h-6 text-slate-400" />
+                    <span className="text-[10px] font-medium text-slate-500 mt-1">Tambah Foto</span>
+                    <input type="file" multiple accept=".jpg,.jpeg,.png" className="hidden" onChange={handleImageChange} />
                   </label>
-                  <p className="text-xs text-slate-500">Biarkan kosong jika tidak ingin mengubah foto.</p>
                 </div>
               </div>
             </section>
+            
             <section className="space-y-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-bold text-slate-800">Tipe Kamar / Ruangan</h2>
@@ -185,6 +173,7 @@ export default function EditPropertyPage() {
                 </div>
               ))}
             </section>
+            
             <div className="pt-4 border-t border-slate-100 flex justify-end gap-3">
               <button type="button" onClick={() => navigate("/tenant")} className="px-6 py-2.5 rounded-xl text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors">Batal</button>
               <button type="submit" disabled={isSubmitting} className="px-6 py-2.5 rounded-xl text-sm font-semibold text-white bg-amber-600 hover:bg-amber-700 transition-colors flex items-center gap-2 disabled:opacity-50">

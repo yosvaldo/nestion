@@ -105,7 +105,7 @@ export default function TenantReportsPage() {
                   onChange={(e) => setSort(e.target.value)} 
                   className="border rounded-xl px-3 py-2 text-sm w-48 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
                 >
-                  <option value="date">Date (Newest)</option>
+                  <option value="date">Stay Date (Newest)</option>
                   <option value="total">Total Value (Highest)</option>
                 </select>
               </div>
@@ -118,15 +118,16 @@ export default function TenantReportsPage() {
                     <th className="px-6 py-4 font-semibold">Transaction ID</th>
                     <th className="px-6 py-4 font-semibold">Property & Room</th>
                     <th className="px-6 py-4 font-semibold">User</th>
-                    <th className="px-6 py-4 font-semibold">Date</th>
+                    <th className="px-6 py-4 font-semibold">Transaction Date</th>
+                    <th className="px-6 py-4 font-semibold">Stay Date</th>
                     <th className="px-6 py-4 font-semibold">Total</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {loading ? (
-                    <tr><td colSpan={5} className="text-center py-10">Loading...</td></tr>
+                    <tr><td colSpan={6} className="text-center py-10">Loading...</td></tr>
                   ) : salesData.data.length === 0 ? (
-                    <tr><td colSpan={5} className="text-center py-10 text-slate-500">No sales data found.</td></tr>
+                    <tr><td colSpan={6} className="text-center py-10 text-slate-500">No sales data found.</td></tr>
                   ) : (
                     salesData.data.map((order) => (
                       <tr key={order.id} className="hover:bg-slate-50">
@@ -134,6 +135,10 @@ export default function TenantReportsPage() {
                         <td className="px-6 py-4">{order.room.property.name} - {order.room.name}</td>
                         <td className="px-6 py-4">{order.user.fullName}<br/><span className="text-xs text-slate-400">{order.user.email}</span></td>
                         <td className="px-6 py-4">{new Date(order.createdAt).toLocaleDateString("id-ID")}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-xs text-slate-500">
+                          <span className="font-medium text-slate-700">{new Date(order.checkInDate).toLocaleDateString("id-ID")}</span> <br/>
+                          s/d <span className="font-medium text-slate-700">{new Date(order.checkOutDate).toLocaleDateString("id-ID")}</span>
+                        </td>
                         <td className="px-6 py-4 font-bold text-amber-600">Rp {order.totalPrice.toLocaleString("id-ID")}</td>
                       </tr>
                     ))

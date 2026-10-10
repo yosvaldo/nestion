@@ -15,9 +15,18 @@ class TenantPropertyController {
   getMyProperties = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const tenantId = this.getTenantId(req);
-      const properties = await tenantPropertyService.getMyProperties(tenantId);
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const name = req.query.name as string | undefined;
+      const result = await tenantPropertyService.getMyProperties(tenantId, page, limit, name);
+      
       return res.send(
-        responseBuilder(200, "Tenant properties fetched successfully.", properties)
+        responseBuilder(200, "Tenant properties fetched successfully.", result.properties, {
+          currentPage: result.page,
+          limit: result.limit,
+          totalItems: result.total,
+          totalPages: result.totalPages
+        })
       );
     } catch (error) {
       next(error);

@@ -50,7 +50,7 @@ export default function PricingCalendar({
         {priceData.map((day) => {
           const isCheckIn = checkInDate === day.date;
           const isCheckOut = checkOutDate === day.date;
-          const isUnavailable = day.isAvailable === false;
+          const isUnavailable = day.isAvailable === false && !isCheckOut;
           
           const inDateObj = checkInDate ? new Date(checkInDate) : null;
           const outDateObj = checkOutDate ? new Date(checkOutDate) : null;

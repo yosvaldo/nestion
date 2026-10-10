@@ -7,13 +7,15 @@ import PricingCalendar from "@/components/property/PricingCalendar";
 import { MapPin } from "lucide-react";
 import { toast } from "sonner";
 import type { PropertyDetailResponse, PriceCalendarEntry } from "@/models/property.model";
+import useAuthStore from "@/stores/authStore"; 
 
 export default function PropertyDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const initialCheckIn = searchParams.get("checkInDate") || "";
-  const initialCheckOut = searchParams.get("checkOutDate") || "";
+  const initialCheckOut = searchParams.get("checkOutDate") || "";  
+  const user = useAuthStore((state) => state.user);
   const [property, setProperty] = useState<PropertyDetailResponse | null>(null);
   const [calendarData, setCalendarData] = useState<PriceCalendarEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,8 +50,7 @@ export default function PropertyDetailPage() {
         const propertyCalendar = calRes.data.data;
         type CalendarDay = { date: string; price: number; isAvailable: boolean };
         type RoomCalendar = { roomId: string; basePrice: number; calendar: CalendarDay[] };        
-        const roomCal = propertyCalendar.rooms.find((r: RoomCalendar) => r.roomId === selectedRoomId);
-        
+        const roomCal = propertyCalendar.rooms.find((r: RoomCalendar) => r.roomId === selectedRoomId);        
         if (roomCal) {
           const formatted = roomCal.calendar.map((day: CalendarDay) => ({
             date: day.date,
@@ -67,15 +68,49 @@ export default function PropertyDetailPage() {
   }, [selectedRoomId, id, currentMonth, currentYear]);
 
   const handleDateSelection = (date: string) => {
+    const clickedDate = new Date(date);
+    clickedDate.setHours(0, 0, 0, 0); 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); 
+    if (clickedDate < today) {
+      toast.error("Tidak bisa memilih tanggal yang sudah berlalu.");
+      return; 
+    }
+    const clickedDayData = calendarData.find(d => d.date === date);
     if (!checkInDate || (checkInDate && checkOutDate)) {
+      if (clickedDayData && !clickedDayData.isAvailable) {
+        toast.error("Tanggal ini sudah terpesan / tidak tersedia.");
+        return;
+      }
       setCheckInDate(date);
       setCheckOutDate("");
     } else {
       const inDate = new Date(checkInDate);
-      const clickedDate = new Date(date);
       if (clickedDate > inDate) {
+        let isRangeAvailable = true;
+        const currentDate = new Date(inDate);
+        while (currentDate < clickedDate) {
+          const yyyy = currentDate.getFullYear();
+          const mm = String(currentDate.getMonth() + 1).padStart(2, "0");
+          const dd = String(currentDate.getDate()).padStart(2, "0");
+          const dateString = `${yyyy}-${mm}-${dd}`;
+          const dayData = calendarData.find(d => d.date === dateString);
+          if (dayData && !dayData.isAvailable) {
+            isRangeAvailable = false;
+            break;
+          }
+          currentDate.setDate(currentDate.getDate() + 1);
+        }
+        if (!isRangeAvailable) {
+          toast.error("Terdapat tanggal yang sudah dipesan di dalam rentang waktu tersebut.");
+          return;
+        }
         setCheckOutDate(date);
       } else {
+        if (clickedDayData && !clickedDayData.isAvailable) {
+          toast.error("Tanggal ini sudah terpesan / tidak tersedia.");
+          return;
+        }
         setCheckInDate(date);
         setCheckOutDate("");
       }
@@ -83,6 +118,10 @@ export default function PropertyDetailPage() {
   };
 
   const handleBookNow = async () => {
+    if (!user || user.role !== "USER") {
+      toast.error("Mohon daftar atau login untuk memesan");
+      return; 
+    }
     if (!checkInDate || !checkOutDate) return toast.error("Silakan lengkapi tanggal Check-In dan Check-Out.");
     setIsBooking(true);
     try {
@@ -114,6 +153,22 @@ export default function PropertyDetailPage() {
     );
   }
 
+  let firstUnavailableDate = "";
+  if (checkInDate && !checkOutDate) {
+    const inDate = new Date(checkInDate);
+    const futureDates = calendarData.filter(d => new Date(d.date) > inDate);
+    futureDates.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    const firstUnavail = futureDates.find(d => !d.isAvailable);
+    if (firstUnavail) {
+      firstUnavailableDate = firstUnavail.date;
+    }
+  }
+
+  const displayCalendarData = calendarData.map(day => ({
+    ...day,
+    isAvailable: day.date === firstUnavailableDate ? true : day.isAvailable
+  }));
+
   return (
     <>
       <SEO title={`${property.name} | Nestion`} description={property.description} />
@@ -140,8 +195,7 @@ export default function PropertyDetailPage() {
             <p className="text-slate-600 leading-relaxed max-w-4xl">
               {property.description}
             </p>
-          </div>
-          
+          </div>          
           <div className="flex flex-col gap-10">
             <div className="w-full">
               <RoomList 
@@ -149,11 +203,10 @@ export default function PropertyDetailPage() {
                 selectedRoomId={selectedRoomId}
                 onSelectRoom={setSelectedRoomId}
               />
-            </div>
-            
+            </div>            
             <div className="w-full flex flex-col gap-6 border-t border-slate-200 pt-10">
               <PricingCalendar 
-                priceData={calendarData} 
+                priceData={displayCalendarData} 
                 checkInDate={checkInDate}
                 checkOutDate={checkOutDate}
                 onSelectDate={handleDateSelection}
@@ -161,8 +214,7 @@ export default function PropertyDetailPage() {
                 currentYear={currentYear}
                 onNextMonth={handleNextMonth}
                 onPrevMonth={handlePrevMonth}
-              />
-              
+              />              
               <div className="bg-slate-900 rounded-2xl p-6 md:p-8 text-white shadow-xl flex flex-col md:flex-row justify-between items-center gap-6">
                 <div>
                   <h4 className="font-bold text-xl mb-1">Reservation Summary</h4>
@@ -171,8 +223,7 @@ export default function PropertyDetailPage() {
                       ? `Tanggal terpilih: ${checkInDate} s/d ${checkOutDate}`
                       : "Pilih kamar, lalu tentukan tanggal Check-In dan Check-Out untuk memesan."}
                   </p>
-                </div>
-                
+                </div>                
                 <div className="w-full md:w-auto min-w-50">
                   {selectedRoomId && checkInDate && checkOutDate ? (
                     <button

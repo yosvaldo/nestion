@@ -1,4 +1,4 @@
-import type { Property, Room } from "../generated/prisma/client.js";
+import type { Property, Room, Prisma } from "../generated/prisma/client.js";
 import { prisma } from "../libs/prisma.client.js";
 import type {
   CreatePropertyInput,
@@ -8,16 +8,41 @@ import type {
 } from "../types/property.type.js";
 
 class TenantPropertyRepository {
-  async findTenantProperties(tenantId: string): Promise<Property[]> {
-    return prisma.property.findMany({
-      where: { tenantId, deletedAt: null },
-      include: {
-        category: true,
-        pictures: true,
-        rooms: { where: { deletedAt: null } },
-      },
-      orderBy: { createdAt: "desc" },
-    });
+  async findTenantProperties(tenantId: string, page: number = 1, limit: number = 10, name?: string) {
+    const where: Prisma.PropertyWhereInput = {
+      tenantId,
+      deletedAt: null,
+    };
+
+    if (name) {
+      where.name = {
+        contains: name,
+        mode: "insensitive",
+      };
+    }
+
+    const [properties, total] = await Promise.all([
+      prisma.property.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        include: {
+          category: true,
+          pictures: true,
+          rooms: { where: { deletedAt: null } },
+        },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.property.count({ where })
+    ]);
+
+    return {
+      properties,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit)
+    };
   }
 
   async findTenantPropertyById(

@@ -2,6 +2,8 @@ export interface ISalesOrder {
   id: string;
   orderNumber: string;
   createdAt: string;
+  checkInDate: string;
+  checkOutDate: string;
   totalPrice: number;
   room: { 
     name: string; 

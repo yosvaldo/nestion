@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { IRoomCalendar, ICalendarOrder } from "@/models/report.model";
 
@@ -14,6 +14,20 @@ export default function PropertyCalendar({ rooms, loading }: PropertyCalendarPro
   const month = currentMonth.getMonth();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const daysArray = Array.from({ length: daysInMonth }).map((_, i) => new Date(year, month, i + 1));
+
+  const uniqueRooms = useMemo(() => {
+    const grouped = rooms.reduce((acc, room) => {
+      const key = `${room.property.name}-${room.name}`;
+      if (!acc[key]) {
+        acc[key] = { ...room, orders: [...room.orders] };
+      } else {
+        acc[key].orders.push(...room.orders);
+      }
+      return acc;
+    }, {} as Record<string, IRoomCalendar>);
+    
+    return Object.values(grouped);
+  }, [rooms]);
 
   const checkAvailable = (date: Date, orders: ICalendarOrder[]) => {
     const target = new Date(date).setHours(0, 0, 0, 0);
@@ -63,10 +77,10 @@ export default function PropertyCalendar({ rooms, loading }: PropertyCalendarPro
           <tbody className="divide-y divide-slate-100">
             {loading ? (
               <tr><td colSpan={daysInMonth + 1} className="text-center py-10">Loading...</td></tr>
-            ) : rooms.length === 0 ? (
+            ) : uniqueRooms.length === 0 ? (
               <tr><td colSpan={daysInMonth + 1} className="text-center py-10 text-slate-500">No properties found.</td></tr>
             ) : (
-              rooms.map((room) => (
+              uniqueRooms.map((room) => (
                 <tr key={room.id} className="hover:bg-slate-50">
                   <td className="px-4 py-3 font-medium text-slate-900 sticky left-0 bg-white shadow-sm">
                     <div>{room.property.name}</div>
@@ -77,7 +91,7 @@ export default function PropertyCalendar({ rooms, loading }: PropertyCalendarPro
                     return (
                       <td key={i} className="px-1 py-3 text-center border-l border-slate-50">
                         <span 
-                          className={`inline-block w-3 h-3 rounded-full ${isAvail ? "bg-emerald-400" : "bg-rose-500"}`} 
+                          className={`inline-block w-3 h-3 rounded-full ${isAvail ? "bg-blue-500" : "bg-red-500"}`} 
                           title={`${d.toLocaleDateString("id-ID")}: ${isAvail ? "Available" : "Booked"}`}
                         />
                       </td>
@@ -91,8 +105,8 @@ export default function PropertyCalendar({ rooms, loading }: PropertyCalendarPro
       </div>
 
       <div className="pt-2 border-t border-slate-100 flex gap-6 text-xs font-semibold text-slate-600">
-        <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-emerald-400" /> Available</div>
-        <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-rose-500" /> Booked</div>
+        <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-blue-500" /> Available</div>
+        <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-red-500" /> Booked</div>
       </div>
     </div>
   );
