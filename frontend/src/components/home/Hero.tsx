@@ -4,19 +4,19 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 const slides = [
   {
     id: 1,
-    title: "Nikmati Staycation Terbaik di Bali",
+    title: "Nikmati Staycation Terbaik di Bojonegoro",
     subtitle: "Dapatkan penawaran khusus liburan pekan ini.",
     image: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=1200&q=80",
   },
   {
     id: 2,
-    title: "Penginapan Nyaman di Bandung",
+    title: "Penginapan Nyaman di Malang",
     subtitle: "Suasana sejuk dan pemandangan alam memukau.",
     image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80",
   },
   {
     id: 3,
-    title: "Eksplorasi Keindahan Yogyakarta",
+    title: "Eksplorasi Keindahan Surabaya",
     subtitle: "Temukan villa & hotel unik dengan harga terjangkau.",
     image: "https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=1200&q=80",
   },

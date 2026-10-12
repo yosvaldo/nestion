@@ -3,6 +3,7 @@ import RoomList from "@/components/property/RoomList";
 import PricingCalendar from "@/components/property/PricingCalendar";
 import { MapPin } from "lucide-react";
 import { usePropertyDetail } from "@/hooks/use-detail-property";
+import type { PropertyDetailResponse } from "@/models/property.model";
 
 export default function PropertyDetailPage() {
   const {
@@ -26,7 +27,7 @@ export default function PropertyDetailPage() {
       <main className="min-h-screen bg-slate-50 pb-24 font-sans">
         <div className="w-full h-64 md:h-96 bg-slate-200 relative">
           <img 
-            src={property.pictureUrls?.[0] || "https://placehold.co/1200x600?text=No+Image"} 
+            src={(property as PropertyDetailResponse & { pictures?: { pictureUrl: string }[] }).pictures?.[0]?.pictureUrl || property.pictureUrls?.[0] || "https://placehold.co/1200x600?text=No+Image"} 
             alt={property.name}
             className="w-full h-full object-cover"
           />
