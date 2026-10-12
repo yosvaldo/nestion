@@ -85,7 +85,6 @@ export default function PricingCalendar({
                 {dayNumber}
               </span>
               {!isUnavailable && (
-                // PERBAIKAN CSS: Hapus truncate, gunakan responsif text sizing
                 <span className={`text-[9px] md:text-xs font-bold w-full text-center mt-1 leading-none ${(isCheckIn || isCheckOut) ? "text-white" : day.isPeakSeason ? "text-rose-600" : "text-amber-600"}`}>
                   {formatRupiah(day.price)}
                 </span>
