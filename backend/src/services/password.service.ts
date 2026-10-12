@@ -21,7 +21,7 @@ export class PasswordService {
     const expiresAt = new Date(Date.now() + RESET_TOKEN_TTL_MS);
     await authRepository.setResetPasswordToken(user.id, hashToken(rawToken), expiresAt);
 
-    const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${rawToken}`;
+    const resetUrl = `${process.env.CLIENT_URL}/reset-password?token=${rawToken}`;
     const html = renderTemplate("reset-password.hbs", { resetUrl, fullName: user.fullName });
     await EmailService.sendEmail(user.email, "Reset password Nestion Anda", html);
   }
