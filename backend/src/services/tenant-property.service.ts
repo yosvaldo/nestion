@@ -8,8 +8,8 @@ import type {
 } from "../types/property.type.js";
 
 class TenantPropertyService {
-  async getMyProperties(tenantId: string) {
-    return tenantPropertyRepository.findTenantProperties(tenantId);
+  async getMyProperties(tenantId: string, page: number = 1, limit: number = 10, name?: string) {
+    return tenantPropertyRepository.findTenantProperties(tenantId, page, limit, name);
   }
 
   async getMyPropertyById(id: string, tenantId: string) {

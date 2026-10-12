@@ -1,4 +1,4 @@
-import type { Property, Room } from "../generated/prisma/client.js";
+import type { Property, Room, Prisma } from "../generated/prisma/client.js";
 import { prisma } from "../libs/prisma.client.js";
 import type {
   CreatePropertyInput,
@@ -8,16 +8,41 @@ import type {
 } from "../types/property.type.js";
 
 class TenantPropertyRepository {
-  async findTenantProperties(tenantId: string): Promise<Property[]> {
-    return prisma.property.findMany({
-      where: { tenantId, deletedAt: null },
-      include: {
-        category: true,
-        pictures: true,
-        rooms: { where: { deletedAt: null } },
-      },
-      orderBy: { createdAt: "desc" },
-    });
+  async findTenantProperties(tenantId: string, page: number = 1, limit: number = 10, name?: string) {
+    const where: Prisma.PropertyWhereInput = {
+      tenantId,
+      deletedAt: null,
+    };
+
+    if (name) {
+      where.name = {
+        contains: name,
+        mode: "insensitive",
+      };
+    }
+
+    const [properties, total] = await Promise.all([
+      prisma.property.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        include: {
+          category: true,
+          pictures: true,
+          rooms: { where: { deletedAt: null } },
+        },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.property.count({ where })
+    ]);
+
+    return {
+      properties,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit)
+    };
   }
 
   async findTenantPropertyById(
@@ -38,7 +63,8 @@ class TenantPropertyRepository {
     tenantId: string,
     data: CreatePropertyInput
   ): Promise<Property> {
-    const { pictureUrls, ...propertyData } = data;
+    const { pictureUrls, rooms, ...propertyData } = data;
+
     return prisma.property.create({
       data: {
         ...propertyData,
@@ -52,6 +78,14 @@ class TenantPropertyRepository {
               },
             }
           : {}),
+        rooms: {
+          create: rooms.map((room) => ({
+            name: room.name,
+            basePrice: room.basePrice,
+            guestCapacity: room.guestCapacity,
+            description: room.description,
+          }))
+        }
       },
       include: { category: true, pictures: true, rooms: true },
     });
@@ -61,9 +95,22 @@ class TenantPropertyRepository {
     id: string,
     data: UpdatePropertyInput
   ): Promise<Property> {
+    const { pictureUrls, ...propertyData } = data;
     return prisma.property.update({
       where: { id },
-      data,
+      data: {
+        ...propertyData,
+        ...(pictureUrls && pictureUrls.length > 0
+          ? {
+            pictures: {
+              deleteMany: {},
+              createMany: {
+                data: pictureUrls.map((url) => ({ pictureUrl: url })),
+              },
+            },
+          }
+        : {}),
+      },
       include: { category: true, pictures: true, rooms: true },
     });
   }

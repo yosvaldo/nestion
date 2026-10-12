@@ -2,12 +2,8 @@ import type { NextFunction, Request, Response } from "express";
 import AppError from "../errors/app.error.js";
 import tenantPropertyService from "../services/tenant-property.service.js";
 import { responseBuilder } from "../utils/response-builder.util.js";
-import {
-  createPropertySchema,
-  createRoomSchema,
-  updatePropertySchema,
-  updateRoomSchema,
-} from "../validators/property.validator.js";
+import { createPropertySchema, createRoomSchema, updatePropertySchema, updateRoomSchema } from "../validators/property.validator.js";
+import { uploadToCloudinary } from "../utils/cloudinary.util.js";
 
 class TenantPropertyController {
   private getTenantId(req: Request): string {
@@ -19,9 +15,18 @@ class TenantPropertyController {
   getMyProperties = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const tenantId = this.getTenantId(req);
-      const properties = await tenantPropertyService.getMyProperties(tenantId);
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const name = req.query.name as string | undefined;
+      const result = await tenantPropertyService.getMyProperties(tenantId, page, limit, name);
+      
       return res.send(
-        responseBuilder(200, "Tenant properties fetched successfully.", properties)
+        responseBuilder(200, "Tenant properties fetched successfully.", result.properties, {
+          currentPage: result.page,
+          limit: result.limit,
+          totalItems: result.total,
+          totalPages: result.totalPages
+        })
       );
     } catch (error) {
       next(error);
@@ -32,7 +37,13 @@ class TenantPropertyController {
     try {
       const tenantId = this.getTenantId(req);
       const body = await createPropertySchema.parseAsync(req.body);
-      const property = await tenantPropertyService.createProperty(tenantId, body);
+      let pictureUrls: string[] = [];
+      if (req.file) {
+        const uploadedUrl = await uploadToCloudinary(req.file, "properties");
+        pictureUrls.push(uploadedUrl);
+      }
+      const payload = { ...body, pictureUrls };
+      const property = await tenantPropertyService.createProperty(tenantId, payload);
       return res
         .status(201)
         .send(responseBuilder(201, "Property created successfully.", property));
@@ -46,7 +57,15 @@ class TenantPropertyController {
       const tenantId = this.getTenantId(req);
       const id = req.params.id as string;
       const body = await updatePropertySchema.parseAsync(req.body);
-      const property = await tenantPropertyService.updateProperty(id, tenantId, body);
+      let pictureUrls: string[] = [];
+      if (req.file) {
+        const uploadedUrl = await uploadToCloudinary(req.file, "properties");
+        pictureUrls.push(uploadedUrl);
+      }
+      const payload = pictureUrls.length > 0
+        ? { ...body, pictureUrls }
+        : { ...body };
+      const property = await tenantPropertyService.updateProperty(id, tenantId, payload);
       return res.send(
         responseBuilder(200, "Property updated successfully.", property)
       );

@@ -25,7 +25,7 @@ class OrderService {
 
   private async persistOrder(userId: string, roomId: string, checkIn: Date, checkOut: Date, totalPrice: number) {
     const orderNumber = `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-    const paymentExpiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour limit as per PRD
+    const paymentExpiresAt = new Date(Date.now() + 60 * 60 * 1000);
     return orderRepository.create({
       orderNumber, userId, roomId, checkInDate: checkIn, checkOutDate: checkOut,
       totalPrice, status: OrderStatus.MENUNGGU_PEMBAYARAN, paymentExpiresAt,
@@ -37,6 +37,21 @@ class OrderService {
     const checkOut = new Date(input.checkOutDate);
     if (checkIn >= checkOut) throw new AppError("Check-out date must be after check-in date", 400);
 
+    const existingOrder = await prisma.order.findFirst({
+      where: {
+        roomId: input.roomId,
+        status: { 
+          in: [OrderStatus.MENUNGGU_PEMBAYARAN, OrderStatus.MENUNGGU_KONFIRMASI_PEMBAYARAN, OrderStatus.DIPROSES] 
+        },
+        checkInDate: { lt: checkOut },
+        checkOutDate: { gt: checkIn },
+      }
+    });
+
+    if (existingOrder) {
+      throw new AppError("Kamar sudah terpesan pada rentang tanggal tersebut.", 400);
+    }
+    
     const totalPrice = await this.calculateTotalPrice(input.roomId, checkIn, checkOut);
     return this.persistOrder(userId, input.roomId, checkIn, checkOut, totalPrice);
   }
@@ -47,6 +62,11 @@ class OrderService {
     if (!order) throw new AppError("Order not found", 404);
     if (order.userId !== userId) throw new AppError("Unauthorized action", 403);
     if (order.status !== OrderStatus.MENUNGGU_PEMBAYARAN) throw new AppError("Invalid order status for upload", 400);
+
+    if (new Date() > order.paymentExpiresAt) {
+      await orderRepository.cancelOrder(orderId);
+      throw new AppError("Batas waktu 1 jam telah habis. Pesanan dibatalkan otomatis.", 400);
+    }
 
     const proofUrl = await uploadToCloudinary(file, "payment-proofs");
     return orderRepository.updateStatusAndProof(orderId, OrderStatus.MENUNGGU_KONFIRMASI_PEMBAYARAN, proofUrl);

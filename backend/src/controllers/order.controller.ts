@@ -47,7 +47,7 @@ class OrderController {
     try {
       const userId = req.user!.id;
       const orderId = req.params.id as string;
-      const canceled = await orderService.cancelOrder(orderId, userId);
+      const canceled = await orderService.cancelOrder(userId, orderId);
       return res.send(responseBuilder(200, "Order canceled successfully.", canceled));
     } catch (error) {
       next(error);

@@ -41,8 +41,16 @@ class OrderRepository {
 
     if (status) where.status = status;
     if (startDate) {
-      const d = new Date(startDate);
-      where.checkInDate = { gte: d };
+      const startOfDay = new Date(startDate);
+      startOfDay.setUTCHours(0, 0, 0, 0);
+
+      const endOfDay = new Date(startDate);
+      endOfDay.setUTCHours(23, 59, 59, 999);
+
+      where.createdAt = {
+        gte: startOfDay,
+        lte: endOfDay,
+      };
     }
     if (search) {
       where.orderNumber = { contains: search, mode: "insensitive" };

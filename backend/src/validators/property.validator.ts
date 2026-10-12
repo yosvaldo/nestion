@@ -24,6 +24,21 @@ export const createPropertySchema = z.object({
   description: z.string().optional(),
   city: z.string().min(2, "City is required"),
   address: z.string().optional(),
+  rooms: z.string().transform((val, ctx) => {
+    try {
+      return JSON.parse(val);
+    } catch (e) {
+      ctx.addIssue("Invalid JSON string for rooms");
+      return z.NEVER;
+    }
+  }).pipe(
+    z.array(z.object({
+      name: z.string().min(2, "Room name is required"),
+      basePrice: z.number().positive("Price must be positive"),
+      guestCapacity: z.number().min(1).default(2),
+      description: z.string().optional(),
+    })).min(1, "At least one room is required")
+  )
 });
 
 export const updatePropertySchema = createPropertySchema.partial();

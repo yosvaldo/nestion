@@ -1,70 +1,16 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import api from "@/configs/api.config";
 import SEO from "@/components/seo/seo";
 import RoomList from "@/components/property/RoomList";
 import PricingCalendar from "@/components/property/PricingCalendar";
 import { MapPin } from "lucide-react";
-import { toast } from "sonner";
-import type { PropertyDetailResponse, PriceCalendarEntry } from "@/models/property.model";
+import { usePropertyDetail } from "@/hooks/use-detail-property";
 
 export default function PropertyDetailPage() {
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();  
-  const [property, setProperty] = useState<PropertyDetailResponse | null>(null);
-  const [calendarData, setCalendarData] = useState<PriceCalendarEntry[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [isBooking, setIsBooking] = useState(false);
-  const [selectedRoomId, setSelectedRoomId] = useState<string>("");
-  const [selectedDate, setSelectedDate] = useState<string>("");
-
-  useEffect(() => {
-    const fetchPropertyDetail = async () => {
-      setLoading(true);
-      try {
-        const propRes = await api.get(`/properties/${id}`);        
-        // if (isMounted) {
-          setProperty(propRes.data.data);          
-          // if (propRes.data.data.rooms?.length) 
-          //   setSelectedRoomId(propRes.data.data.rooms[0].id);
-          setLoading(false);
-        // }
-      } catch {
-        // if (isMounted) 
-         setLoading(false); navigate("/error");
-    };
-    fetchPropertyDetail();
-  }}, [id]);
-
-  useEffect(() => {
-    let isMounted = true;
-    const fetchPricingCalendar = async () => {
-      if (!selectedRoomId) return;
-      try {
-        const calRes = await api.get(`/properties/calendar/${selectedRoomId}`);
-        if (isMounted) setCalendarData(calRes.data.data);
-      } catch {
-        if (isMounted) setCalendarData([]);
-      }
-    };
-    fetchPricingCalendar();
-    return () => { isMounted = false; };
-  }, [selectedRoomId]);
-
-  const handleBookNow = async () => {
-    setIsBooking(true);
-    try {
-      const checkIn = new Date(selectedDate);
-      const checkOut = new Date(checkIn.setDate(checkIn.getDate() + 1)).toISOString().split("T")[0];
-      await api.post("/orders", { roomId: selectedRoomId, checkInDate: selectedDate, checkOutDate: checkOut });
-      toast.success("Pesanan dibuat! Selesaikan pembayaran.");
-      navigate("/user/orders");
-      setIsBooking(false);
-    } catch {
-      toast.error("Gagal membuat pesanan. Pastikan tanggal tersedia.");
-      setIsBooking(false);
-    }
-  };
+  const {
+    property, loading, selectedRoomId, setSelectedRoomId,
+    checkInDate, checkOutDate, currentMonth, currentYear, isBooking,
+    displayCalendarData, handleDateSelection, handleBookNow,
+    handleNextMonth, handlePrevMonth
+  } = usePropertyDetail();
 
   if (loading || !property) {
     return (
@@ -80,7 +26,7 @@ export default function PropertyDetailPage() {
       <main className="min-h-screen bg-slate-50 pb-24 font-sans">
         <div className="w-full h-64 md:h-96 bg-slate-200 relative">
           <img 
-            src={property.pictureUrls[0] || "https://placehold.co/1200x600?text=No+Image"} 
+            src={property.pictureUrls?.[0] || "https://placehold.co/1200x600?text=No+Image"} 
             alt={property.name}
             className="w-full h-full object-cover"
           />
@@ -100,34 +46,48 @@ export default function PropertyDetailPage() {
             <p className="text-slate-600 leading-relaxed max-w-4xl">
               {property.description}
             </p>
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-8">
+          </div>          
+          <div className="flex flex-col gap-10">
+            <div className="w-full">
               <RoomList 
                 rooms={property.rooms} 
                 selectedRoomId={selectedRoomId}
                 onSelectRoom={setSelectedRoomId}
               />
-            </div>
-            <div className="lg:col-span-1">
-              <div className="sticky top-6 space-y-6">
-                <PricingCalendar 
-                  priceData={calendarData} 
-                  selectedDate={selectedDate}
-                  onSelectDate={setSelectedDate}
-                />
-                <div className="bg-slate-900 rounded-2xl p-6 text-white shadow-xl">
-                  <h4 className="font-bold mb-4">Reservation Summary</h4>
-                  {selectedRoomId && selectedDate ? (
+            </div>            
+            <div className="w-full flex flex-col gap-6 border-t border-slate-200 pt-10">
+              <PricingCalendar 
+                priceData={displayCalendarData} 
+                checkInDate={checkInDate}
+                checkOutDate={checkOutDate}
+                onSelectDate={handleDateSelection}
+                currentMonth={currentMonth}
+                currentYear={currentYear}
+                onNextMonth={handleNextMonth}
+                onPrevMonth={handlePrevMonth}
+              />              
+              <div className="bg-slate-900 rounded-2xl p-6 md:p-8 text-white shadow-xl flex flex-col md:flex-row justify-between items-center gap-6">
+                <div>
+                  <h4 className="font-bold text-xl mb-1">Reservation Summary</h4>
+                  <p className="text-slate-400 text-sm">
+                    {selectedRoomId && checkInDate && checkOutDate 
+                      ? `Tanggal terpilih: ${checkInDate} s/d ${checkOutDate}`
+                      : "Pilih kamar, lalu tentukan tanggal Check-In dan Check-Out untuk memesan."}
+                  </p>
+                </div>                
+                <div className="w-full md:w-auto min-w-50">
+                  {selectedRoomId && checkInDate && checkOutDate ? (
                     <button
                       onClick={handleBookNow}
                       disabled={isBooking}
-                      className="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 rounded-xl transition-colors disabled:opacity-50"
+                      className="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3.5 px-8 rounded-xl transition-colors disabled:opacity-50 text-lg"
                     >
                       {isBooking ? "Memproses..." : "Book Now"}
                     </button>
                   ) : (
-                    <p className="text-sm text-slate-400">Silahkan pilih kamar dan tanggal untuk memesan.</p>
+                    <button disabled className="w-full bg-slate-800 text-slate-500 font-bold py-3.5 px-8 rounded-xl cursor-not-allowed">
+                      Menunggu Pilihan
+                    </button>
                   )}
                 </div>
               </div>
