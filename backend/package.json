@@ -8,6 +8,7 @@
     "dev": "tsx watch src/server.ts",
     "build": "npx prisma generate && npx tsc",
     "start": "node dist/server.js",
+    "postinstall": "npx prisma generate",
     "db:init": "npx prisma init",
     "db:studio": "npx prisma studio",
     "db:seed": "npx tsx prisma/seed.ts",
