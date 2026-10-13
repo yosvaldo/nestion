@@ -123,7 +123,14 @@ export default function CategoryManagementPage() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {loading ? (
-                  <tr><td colSpan={2} className="text-center py-10">Memuat...</td></tr>
+                  <tr>
+                    <td colSpan={2} className="text-center py-16">
+                      <div className="flex flex-col items-center justify-center gap-3">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
+                        <p className="text-sm text-slate-500 font-medium">Memuat kategori...</p>
+                      </div>
+                    </td>
+                  </tr>
                 ) : categories.length === 0 ? (
                   <tr><td colSpan={2} className="text-center py-10 text-slate-500">Belum ada kategori.</td></tr>
                 ) : (
