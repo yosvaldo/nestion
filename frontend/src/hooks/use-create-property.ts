@@ -10,10 +10,9 @@ import { useDebounce } from "@/hooks/use-debounce";
 
 export function useCreateProperty() {
   const navigate = useNavigate();
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);  
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
-  
   const [allCities, setAllCities] = useState<string[]>([]);
   const [isCityOpen, setIsCityOpen] = useState(false);
   const [citySearch, setCitySearch] = useState("");
@@ -29,7 +28,6 @@ export function useCreateProperty() {
   });
 
   const { fields, append, remove } = useFieldArray({ control: methods.control, name: "rooms" });
-  
   const selectedCity = useWatch({ control: methods.control, name: "city" });
 
   useEffect(() => {
@@ -61,11 +59,17 @@ export function useCreateProperty() {
   }, []);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 1024 * 1024) return toast.error("Ukuran gambar maksimal 1MB");    
-    setImageFile(file);
-    setPreview(URL.createObjectURL(file));
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+    const validFiles = files.filter(f => f.size <= 1024 * 1024);
+    if (validFiles.length < files.length) toast.error("Beberapa gambar ditolak (Maks 1MB)");
+    setImageFiles(prev => [...prev, ...validFiles]);
+    setPreviews(prev => [...prev, ...validFiles.map(f => URL.createObjectURL(f))]);
+  };
+
+  const removeImage = (index: number) => {
+    setImageFiles(prev => prev.filter((_, i) => i !== index));
+    setPreviews(prev => prev.filter((_, i) => i !== index));
   };
 
   const onSubmit = async (data: CreatePropertyFormValues) => {
@@ -76,8 +80,8 @@ export function useCreateProperty() {
       formData.append("categoryId", data.category);
       formData.append("description", data.description);
       formData.append("rooms", JSON.stringify(data.rooms));
-      if (imageFile) formData.append("picture", imageFile);
       
+      imageFiles.forEach(file => formData.append("pictures", file));      
       await api.post("/properties", formData, { headers: { "Content-Type": "multipart/form-data" } });
       toast.success("Properti berhasil ditambahkan!");
       navigate("/tenant");
@@ -90,7 +94,7 @@ export function useCreateProperty() {
 
   return {
     methods, fields, append, remove, selectedCity, navigate,
-    preview, handleImageChange, onSubmit,
+    previews, handleImageChange, removeImage, onSubmit,
     categories, cityRef, isCityOpen, setIsCityOpen,
     citySearch, setCitySearch, filteredCities, allCities
   };

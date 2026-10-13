@@ -1,11 +1,11 @@
 import SEO from "@/components/seo/seo";
-import { ArrowLeft, Save, ImagePlus, Plus, Trash2, ChevronDown, Search, Check } from "lucide-react";
+import { ArrowLeft, Save, ImagePlus, Plus, Trash2, ChevronDown, Search, Check, X } from "lucide-react";
 import { useCreateProperty } from "@/hooks/use-create-property";
 
 export default function CreatePropertyPage() {
   const {
     methods: { register, handleSubmit, setValue, formState: { errors, isSubmitting } },
-    fields, append, remove, selectedCity, navigate, preview, handleImageChange, onSubmit,
+    fields, append, remove, selectedCity, navigate, previews, handleImageChange, removeImage, onSubmit,
     categories, cityRef, isCityOpen, setIsCityOpen, citySearch, setCitySearch, filteredCities, allCities
   } = useCreateProperty();
 
@@ -83,12 +83,24 @@ export default function CreatePropertyPage() {
                 <textarea {...register("description")} rows={4} className={`${inputClass} resize-none`}></textarea>
                 {errors.description && <p className="text-xs text-rose-500 mt-1.5">{errors.description.message}</p>}
               </div>
+              
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Foto Utama (Maks 1MB)</label>
-                <label className="flex flex-col items-center justify-center w-32 h-32 border-2 border-dashed border-slate-300 rounded-2xl cursor-pointer hover:bg-slate-50 hover:border-amber-500 transition-colors bg-slate-50 overflow-hidden relative">
-                  {preview ? <img src={preview} alt="Preview" className="w-full h-full object-cover" /> : <div className="flex flex-col items-center text-slate-400"><ImagePlus className="w-6 h-6 mb-2" /><span className="text-xs font-medium">Upload</span></div>}
-                  <input type="file" accept=".jpg,.jpeg,.png" className="hidden" onChange={handleImageChange} />
-                </label>
+                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Foto Properti (Maks 1MB per file)</label>
+                <div className="flex flex-wrap gap-4 mt-2">
+                  {previews.map((url, i) => (
+                    <div key={`new-${i}`} className="relative w-24 h-24 rounded-2xl overflow-hidden border border-amber-200 group">
+                      <img src={url} alt={`Preview ${i}`} className="w-full h-full object-cover" />
+                      <button type="button" onClick={() => removeImage(i)} className="absolute top-1 right-1 bg-rose-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 hover:bg-rose-600 transition-opacity">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                  <label className="flex flex-col items-center justify-center w-24 h-24 border-2 border-dashed border-slate-300 rounded-2xl cursor-pointer hover:bg-slate-50 hover:border-amber-500 transition-colors bg-slate-50">
+                    <ImagePlus className="w-6 h-6 text-slate-400" />
+                    <span className="text-[10px] font-medium text-slate-500 mt-1">Tambah Foto</span>
+                    <input type="file" multiple accept=".jpg,.jpeg,.png" className="hidden" onChange={handleImageChange} />
+                  </label>
+                </div>
               </div>
             </section>
 

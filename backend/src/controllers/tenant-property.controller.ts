@@ -38,9 +38,10 @@ class TenantPropertyController {
       const tenantId = this.getTenantId(req);
       const body = await createPropertySchema.parseAsync(req.body);
       let pictureUrls: string[] = [];
-      if (req.file) {
-        const uploadedUrl = await uploadToCloudinary(req.file, "properties");
-        pictureUrls.push(uploadedUrl);
+      const files = req.files as Express.Multer.File[];
+      if (files && files.length > 0) {
+        const uploadPromises = files.map(file => uploadToCloudinary(file, "properties"));
+        pictureUrls = await Promise.all(uploadPromises);
       }
       const payload = { ...body, pictureUrls };
       const property = await tenantPropertyService.createProperty(tenantId, payload);
@@ -58,9 +59,10 @@ class TenantPropertyController {
       const id = req.params.id as string;
       const body = await updatePropertySchema.parseAsync(req.body);
       let pictureUrls: string[] = [];
-      if (req.file) {
-        const uploadedUrl = await uploadToCloudinary(req.file, "properties");
-        pictureUrls.push(uploadedUrl);
+      const files = req.files as Express.Multer.File[];
+      if (files && files.length > 0) {
+        const uploadPromises = files.map(file => uploadToCloudinary(file, "properties"));
+        pictureUrls = await Promise.all(uploadPromises);
       }
       const payload = pictureUrls.length > 0
         ? { ...body, pictureUrls }

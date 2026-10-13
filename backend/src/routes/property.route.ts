@@ -8,7 +8,7 @@ import { propertyImageUploader } from "../middlewares/upload.middleware.js";
 const propertyRoute = Router();
 
 propertyRoute.get("/", propertyController.getAll);
-propertyRoute.post("/", verifyToken("access"), roleGuard("TENANT"), propertyImageUploader().single("picture"), tenantPropertyController.createProperty);
+propertyRoute.post("/", verifyToken("access"), roleGuard("TENANT"), propertyImageUploader().array("pictures", 5), tenantPropertyController.createProperty);
 
 propertyRoute.get("/all-cities", propertyController.getAllIndonesiaCities);
 propertyRoute.get("/cities", propertyController.getCities);
@@ -23,7 +23,7 @@ propertyRoute.delete("/:propertyId/rooms/:roomId", verifyToken("access"), roleGu
 
 propertyRoute.get("/:id", propertyController.getById);
 propertyRoute.get("/:id/calendar", propertyController.getCalendar);
-propertyRoute.patch("/:id", verifyToken("access"), roleGuard("TENANT"), verifyPropertyOwnership, propertyImageUploader().single("picture"), tenantPropertyController.updateProperty);
+propertyRoute.patch("/:id", verifyToken("access"), roleGuard("TENANT"), verifyPropertyOwnership, propertyImageUploader().array("pictures", 5), tenantPropertyController.updateProperty);
 propertyRoute.delete("/:id", verifyToken("access"), roleGuard("TENANT"), verifyPropertyOwnership, tenantPropertyController.deleteProperty);
 
 export default propertyRoute;
