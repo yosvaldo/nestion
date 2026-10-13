@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { Building, Receipt, BarChart3, Menu } from "lucide-react";
+import { Building, Receipt, BarChart3, Menu, Tags } from "lucide-react";
 import Logo from "../navbar/Logo";
 import UserMenu from "../navbar/UserMenu";
 import { useState } from "react";
@@ -10,6 +10,7 @@ export default function TenantLayout() {
 
   const navItems = [
     { name: "Properties", path: "/tenant", icon: Building },
+    { name: "Categories", path: "/tenant/categories", icon: Tags },
     { name: "Transactions", path: "/tenant/orders", icon: Receipt },
     { name: "Reports", path: "/tenant/reports", icon: BarChart3 },
   ];

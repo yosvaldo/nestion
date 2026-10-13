@@ -9,6 +9,7 @@ import TenantReportsPage from "@/pages/tenant/report.page";
 import CreatePropertyPage from "@/pages/tenant/create-property.page";
 import RoomSettingsPage from "@/pages/tenant/room-setting.page";
 import EditPropertyPage from "@/pages/tenant/edit-property.page";
+import CategoryManagementPage from "@/pages/tenant/category.page";
 
 export const userProtectedRoutes: IRoute[] = [
   {
@@ -44,6 +45,7 @@ export const tenantProtectedRoutes: IRoute[] = [
       { path: "rooms/:roomId", element: <RoomSettingsPage />},
       { path: "orders", element: <TenantOrdersPage /> },
       { path: "reports", element: <TenantReportsPage /> },
+      { path: "categories", element: <CategoryManagementPage /> },
     ],
   },
 ];

@@ -118,7 +118,10 @@ export default function UserOrdersPage() {
 
           <div className="space-y-4">
             {loading ? (
-              <div className="text-center py-12 text-slate-500">Memuat pesanan...</div>
+              <div className="flex flex-col items-center justify-center py-16 bg-white rounded-2xl border border-slate-200 gap-3">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
+                <p className="text-sm text-slate-500 font-medium">Memuat riwayat pesanan...</p>
+              </div>
             ) : orders.length === 0 ? (
               <div className="text-center py-12 text-slate-500 bg-white rounded-2xl border">Belum ada pesanan ditemukan.</div>
             ) : (

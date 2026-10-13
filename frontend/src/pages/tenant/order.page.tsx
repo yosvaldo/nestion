@@ -96,7 +96,14 @@ export default function TenantOrdersPage() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {loading ? (
-                <tr><td colSpan={5} className="text-center py-10">Loading...</td></tr>
+                <tr>
+                  <td colSpan={5} className="text-center py-16">
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
+                      <p className="text-sm text-slate-500 font-medium">Memuat daftar pesanan...</p>
+                    </div>
+                  </td>
+                </tr>
               ) : orders.length === 0 ? (
                 <tr><td colSpan={5} className="text-center py-10 text-slate-500">No orders found.</td></tr>
               ) : (
