@@ -20,7 +20,7 @@ export default function CategoryManagementPage() {
     const fetchCategories = async () => {
       setLoading(true);
       try {
-        const res = await api.get("/tenant/categories");
+        const res = await api.get("/categories");
         setCategories(res.data.data);
         setLoading(false);
       } catch {
@@ -34,7 +34,7 @@ export default function CategoryManagementPage() {
 
   const handleRefresh = async () => {
     try {
-      const res = await api.get("/tenant/categories");
+      const res = await api.get("/categories");
       setCategories(res.data.data);
     } catch {
       toast.error("Gagal memperbarui daftar kategori.");
@@ -47,10 +47,10 @@ export default function CategoryManagementPage() {
     
     try {
       if (editingId) {
-        await api.put(`/tenant/categories/${editingId}`, { name });
+        await api.patch(`/categories/${editingId}`, { name });
         toast.success("Kategori berhasil diperbarui.");
       } else {
-        await api.post("/tenant/categories", { name });
+        await api.post("/categories", { name });
         toast.success("Kategori berhasil dibuat.");
       }
       setName("");
@@ -64,7 +64,7 @@ export default function CategoryManagementPage() {
   const handleDelete = async () => {
     if (!categoryToDelete) return;
     try {
-      await api.delete(`/tenant/categories/${categoryToDelete}`);
+      await api.delete(`/categories/${categoryToDelete}`);
       toast.success("Kategori berhasil dihapus.");
       setCategoryToDelete(null);
       handleRefresh();
@@ -89,7 +89,7 @@ export default function CategoryManagementPage() {
                 <label className="text-xs font-semibold text-slate-600 block mb-1">Nama Kategori</label>
                 <input
                   type="text"
-                  placeholder="Contoh: Villa, Resort, Hotel"
+                  placeholder="Contoh: Mansion, Penthouse"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
