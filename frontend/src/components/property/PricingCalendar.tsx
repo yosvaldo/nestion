@@ -10,10 +10,11 @@ interface PricingCalendarProps {
   currentYear: number;
   onNextMonth: () => void;
   onPrevMonth: () => void;
+  isLoading?: boolean;
 }
 
 export default function PricingCalendar({ 
-  priceData, checkInDate, checkOutDate, onSelectDate, currentMonth, currentYear, onNextMonth, onPrevMonth 
+  priceData, checkInDate, checkOutDate, onSelectDate, currentMonth, currentYear, onNextMonth, onPrevMonth, isLoading 
 }: PricingCalendarProps) {
   
   const formatRupiah = (price: number) => {
@@ -21,6 +22,15 @@ export default function PricingCalendar({
     if (price >= 1000) return `Rp ${(price / 1000).toFixed(0)}rb`;
     return `Rp ${price}`;
   };
+
+  if (isLoading) {
+    return (
+      <div className="bg-slate-50 border border-slate-200 rounded-2xl p-12 flex flex-col items-center justify-center min-h-75">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600 mb-4"></div>
+        <p className="text-sm text-slate-500 font-medium">Memuat ketersediaan kamar...</p>
+      </div>
+    );
+  }
 
   if (priceData.length === 0) {
     return (

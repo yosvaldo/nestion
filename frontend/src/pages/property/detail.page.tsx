@@ -7,7 +7,7 @@ import type { PropertyDetailResponse } from "@/models/property.model";
 
 export default function PropertyDetailPage() {
   const {
-    property, loading, selectedRoomId, setSelectedRoomId,
+    property, loading, isCalendarLoading, selectedRoomId, setSelectedRoomId,
     checkInDate, checkOutDate, currentMonth, currentYear, isBooking,
     displayCalendarData, handleDateSelection, handleBookNow,
     handleNextMonth, handlePrevMonth
@@ -66,6 +66,7 @@ export default function PropertyDetailPage() {
                 currentYear={currentYear}
                 onNextMonth={handleNextMonth}
                 onPrevMonth={handlePrevMonth}
+                isLoading={isCalendarLoading}
               />              
               <div className="bg-slate-900 rounded-2xl p-6 md:p-8 text-white shadow-xl flex flex-col md:flex-row justify-between items-center gap-6">
                 <div>

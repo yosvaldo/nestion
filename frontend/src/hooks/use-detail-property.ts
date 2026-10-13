@@ -8,20 +8,18 @@ import type { PropertyDetailResponse, PriceCalendarEntry } from "@/models/proper
 export function usePropertyDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  
+  const [searchParams] = useSearchParams();  
   const initialCheckIn = searchParams.get("checkInDate") || "";
   const initialCheckOut = searchParams.get("checkOutDate") || "";  
   const user = useAuthStore((state) => state.user);
-
   const [property, setProperty] = useState<PropertyDetailResponse | null>(null);
   const [calendarData, setCalendarData] = useState<PriceCalendarEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isCalendarLoading, setIsCalendarLoading] = useState(false);
   const [isBooking, setIsBooking] = useState(false);
   const [selectedRoomId, setSelectedRoomId] = useState<string>("");
   const [checkInDate, setCheckInDate] = useState<string>(initialCheckIn);
   const [checkOutDate, setCheckOutDate] = useState<string>(initialCheckOut);
-  
   const initialDate = initialCheckIn ? new Date(initialCheckIn) : new Date();
   const [currentMonth, setCurrentMonth] = useState(initialDate.getMonth() + 1);
   const [currentYear, setCurrentYear] = useState(initialDate.getFullYear());
@@ -44,6 +42,7 @@ export function usePropertyDetail() {
   useEffect(() => {
     const fetchPricingCalendar = async () => {
       if (!selectedRoomId) return;
+      setIsCalendarLoading(true);
       try {
         const calRes = await api.get(`/properties/${id}/calendar?year=${currentYear}&month=${currentMonth}`);
         const propertyCalendar = calRes.data.data;
@@ -61,6 +60,8 @@ export function usePropertyDetail() {
         }
       } catch {
         setCalendarData([]);
+      } finally {
+        setIsCalendarLoading(false);
       }
     };
     fetchPricingCalendar();
@@ -159,7 +160,7 @@ export function usePropertyDetail() {
   }));
 
   return {
-    property, loading, selectedRoomId, setSelectedRoomId,
+    property, loading, isCalendarLoading, selectedRoomId, setSelectedRoomId,
     checkInDate, checkOutDate, currentMonth, currentYear, isBooking,
     displayCalendarData, handleDateSelection, handleBookNow,
     handleNextMonth, handlePrevMonth
