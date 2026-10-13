@@ -76,7 +76,14 @@ export default function PropertyCalendar({ rooms, loading }: PropertyCalendarPro
           </thead>
           <tbody className="divide-y divide-slate-100">
             {loading ? (
-              <tr><td colSpan={daysInMonth + 1} className="text-center py-10">Loading...</td></tr>
+              <tr>
+                <td colSpan={daysInMonth + 1} className="text-center py-16">
+                  <div className="flex flex-col items-center justify-center gap-3">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
+                    <p className="text-sm text-slate-500 font-medium">Memuat data kalender...</p>
+                  </div>
+                </td>
+              </tr>
             ) : uniqueRooms.length === 0 ? (
               <tr><td colSpan={daysInMonth + 1} className="text-center py-10 text-slate-500">No properties found.</td></tr>
             ) : (
