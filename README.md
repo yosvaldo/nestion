@@ -37,16 +37,8 @@ Nestion is a comprehensive, full-stack property reservation system. It bridges t
 *   **File Storage:** Cloudinary, Multer
 *   **Email Service:** Resend, Handlebars
 
-## 🛠️ Getting Started
-
 ### Prerequisites
 * Node.js (v18+)
 * PostgreSQL instance
 * Cloudinary Account
 * Resend API Key
-
-### Installation
-
-1. Clone the repository:
-   ```bash
-   git clone [https://github.com/yourusername/nestion.git](https://github.com/yourusername/nestion.git)
